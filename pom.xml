@@ -10,7 +10,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <bonita.branding.version>2023.1-SNAPSHOT</bonita.branding.version>
+        <bonita.branding.version>2022.2-u0</bonita.branding.version>
         <bonita.bundle.name>BonitaCommunity-${bonita.branding.version}</bonita.bundle.name>
         <bonita.bundle.root.folder>build/${bonita.bundle.name}</bonita.bundle.root.folder>
         <bonita.download.base.url>https://github.com/bonitasoft/bonita-platform-releases/releases/download</bonita.download.base.url>

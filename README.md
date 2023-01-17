@@ -20,11 +20,21 @@ Bonita users and customers to build the self-contained Bonita Applications.
 
 ## Using the packager tool
 
-* Clone this GitHub repository
+* [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) this GitHub repository
 * Put you Bonita artifacts in `my-application/` folder
 * run `./mvnw package` of `mvwn.bat package`
 
 
 ## Specify a precise Bonita version
 
-Pass Maven extra parameter ``
+Pass Maven extra parameter `bonita.branding.version`.
+
+Eg. :
+```shell
+./mvnw package -Dbonita.branding.version=2022.2-u0
+```
+
+
+## Licensing
+
+This repository is provided under [Gnu General Public License v2.0](LICENSE)
