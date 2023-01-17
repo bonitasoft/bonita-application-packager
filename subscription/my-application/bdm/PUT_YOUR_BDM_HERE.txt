@@ -1,0 +1,3 @@
+If applicable, put here:
+- your bdm.zip file
+- your bdm_access_control.xml file

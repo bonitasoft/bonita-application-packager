@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.bonitasoft.distrib</groupId>
+    <artifactId>bonita-application-bundle-packager-sp</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+
+    <properties>
+        <bonita.tech.version>7.15.1</bonita.tech.version>
+        <bonita.branding.version>2022.2-u1</bonita.branding.version>
+        <bonita.bundle.name>BonitaSubscription-${bonita.branding.version}</bonita.bundle.name>
+        <bonita.bundle.working.folder>${project.build.directory}/tmpBuildDir</bonita.bundle.working.folder>
+        <bonita.bundle.root.folder>${bonita.bundle.working.folder}/${bonita.bundle.name}</bonita.bundle.root.folder>
+        <bonita.download.base.url>https://github.com/bonitasoft/bonita-platform-releases/releases/download</bonita.download.base.url>
+        <bonita.download.full.url>${bonita.download.base.url}/${bonita.branding.version}/${bonita.bundle.name}.zip</bonita.download.full.url>
+        <application.folder.name>my-application</application.folder.name>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-bonita-sp-tomcat-bundle</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.bonitasoft.distrib</groupId>
+                                    <artifactId>bundle-tomcat-sp</artifactId>
+                                    <version>${bonita.tech.version}</version>
+                                    <type>zip</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${bonita.bundle.working.folder}</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>prepare-application-bundle-structure</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <echo message="Preparing Bonita Application Bundle structure..." />
+                                <unzip src="${project.build.directory}/${bonita.bundle.name}.zip" dest="${bonita.bundle.working.folder}" />
+                                <unzip src="${bonita.bundle.root.folder}/server/webapps/bonita.war" dest="${bonita.bundle.root.folder}/server/webapps/bonita/" />
+                                <delete file="${bonita.bundle.root.folder}/server/webapps/bonita.war" />
+
+                                <echo message="Adding your Bonita Application contained in folder ${application.folder.name}..." />
+                                <copy overwrite="true" todir="${bonita.bundle.root.folder}/server/webapps/bonita/WEB-INF/classes/${application.folder.name}">
+                                    <fileset dir="${application.folder.name}" />
+                                </copy>
+
+                                <echo message="Packaging your Bonita Application inside Bonita Tomcat Bundle..." />
+                            </tasks>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.4.2</version>
+                <executions>
+                    <execution>
+                        <id>generate-package</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <finalName>${bonita.bundle.name}-${application.folder.name}</finalName>
+                            <descriptors>
+                                <descriptor>assembly.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

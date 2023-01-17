@@ -12,7 +12,8 @@
     <properties>
         <bonita.branding.version>2022.2-u0</bonita.branding.version>
         <bonita.bundle.name>BonitaCommunity-${bonita.branding.version}</bonita.bundle.name>
-        <bonita.bundle.root.folder>build/${bonita.bundle.name}</bonita.bundle.root.folder>
+        <bonita.bundle.working.folder>${project.build.directory}/tmpBuildDir</bonita.bundle.working.folder>
+        <bonita.bundle.root.folder>${bonita.bundle.working.folder}/${bonita.bundle.name}</bonita.bundle.root.folder>
         <bonita.download.base.url>https://github.com/bonitasoft/bonita-platform-releases/releases/download</bonita.download.base.url>
         <bonita.download.full.url>${bonita.download.base.url}/${bonita.branding.version}/${bonita.bundle.name}.zip</bonita.download.full.url>
         <application.folder.name>my-application</application.folder.name>
@@ -33,12 +34,12 @@
                         <configuration>
                             <tasks>
                                 <echo message="Downloading Bonita Tomcat Bundle from url: ${bonita.download.full.url}..." />
-                                <delete dir="build" failonerror="false" />
-                                <mkdir dir="build" />
+                                <delete dir="${project.build.directory}" failonerror="false" />
+                                <mkdir dir="${bonita.bundle.working.folder}" />
                                 <get src="${bonita.download.full.url}" dest="${bonita.bundle.root.folder}.zip" />
 
                                 <echo message="Preparing Bonita Application Bundle structure..." />
-                                <unzip src="${bonita.bundle.root.folder}.zip" dest="build/" />
+                                <unzip src="${project.build.directory}/${bonita.bundle.name}.zip" dest="${bonita.bundle.working.folder}" />
                                 <unzip src="${bonita.bundle.root.folder}/server/webapps/bonita.war" dest="${bonita.bundle.root.folder}/server/webapps/bonita/" />
                                 <delete file="${bonita.bundle.root.folder}/server/webapps/bonita.war" />
 
@@ -48,9 +49,30 @@
                                 </copy>
 
                                 <echo message="Packaging your Bonita Application inside Bonita Tomcat Bundle..." />
-                                <zip destfile="${bonita.bundle.root.folder}-${application.folder.name}.zip" basedir="${bonita.bundle.root.folder}" />
-                                <echo message="Your Bonita Application has been successfully packaged under ${bonita.bundle.root.folder}-${application.folder.name}.zip." />
+<!--                                <zip destfile="${project.build.directory}/${bonita.bundle.name}-${application.folder.name}.zip" basedir="${bonita.bundle.working.folder}" />-->
+<!--                                <echo message="Your Bonita Application has been successfully packaged under ${bonita.bundle.name}-${application.folder.name}.zip" />-->
                             </tasks>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.4.2</version>
+                <executions>
+                    <execution>
+                        <id>generate-package</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <finalName>${bonita.bundle.name}-${application.folder.name}</finalName>
+                            <descriptors>
+                                <descriptor>assembly.xml</descriptor>
+                            </descriptors>
                         </configuration>
                     </execution>
                 </executions>

@@ -8,6 +8,7 @@ Bonita users and customers to build the self-contained Bonita Applications.
 
 * Have Java JDK 11 installed and configured (available in default PATH)
 * Have an internet connection available
+* [SUBSCRIPTION only] Having Maven configured to access Bonita restricted Maven artifact repository with your Enterprise personal access credentials (Bonita Jfrog Repository)
 
 
 ## What the packager tool does
@@ -20,18 +21,41 @@ Bonita users and customers to build the self-contained Bonita Applications.
 
 ## Using the packager tool
 
+### Community edition
+
 * [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) this GitHub repository
-* Put you Bonita artifacts in `my-application/` folder
-* run `./mvnw package` of `mvwn.bat package`
+* Put you Bonita artifacts in `community/my-application/` folder
+* Run `./mvnw package -f community` (Unix / MacOS) or `mvwn.bat package -f community` (Windows)
+
+### Subscription edition
+
+* [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) this GitHub repository
+* Put you Bonita artifacts in `subscription/my-application/` folder
+* Run `./mvnw package -f subscription` (Unix / MacOS) or `mvwn.bat package -f subscription` (Windows)
 
 
-## Specify a precise Bonita version
+## Specify a precise Bonita version to use
+
+### Community edition
 
 Pass Maven extra parameter `bonita.branding.version`.
 
 Eg. :
 ```shell
-./mvnw package -Dbonita.branding.version=2022.2-u0
+./mvnw package -f community -Dbonita.branding.version=2023.1-u0
+```
+
+### Subscription edition
+
+Pass Maven extra parameters `bonita.branding.version` and `bonita.tech.version`.
+
+> ___Note___: parameters `bonita.branding.version` and `bonita.tech.version` must match precisely.
+> 
+> See [technical Id / platform version mapping list](https://documentation.bonitasoft.com/bonita/latest/version-update/product-versioning#_technical_id) for correspondence.
+
+Eg. :
+```shell
+./mvnw package -f subscription -Dbonita.branding.version=2023.1-u1 -Dbonita.tech.version=8.0.1
 ```
 
 
