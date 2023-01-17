@@ -10,10 +10,12 @@
     <packaging>pom</packaging>
 
     <properties>
-        <bonita.tech.version>7.16-SNAPSHOT</bonita.tech.version>
-        <BONITA_BRANDING_VERSION>2022.2-u0</BONITA_BRANDING_VERSION>
-        <bonita.bundle.name>BonitaCommunity-${BONITA_BRANDING_VERSION}</bonita.bundle.name>
-        <bonita.bundle.rootfolder>${project.build.directory}/${bonita.bundle.name}</bonita.bundle.rootfolder>
+        <bonita.branding.version>2023.1-SNAPSHOT</bonita.branding.version>
+        <bonita.bundle.name>BonitaCommunity-${bonita.branding.version}</bonita.bundle.name>
+        <bonita.bundle.root.folder>build/${bonita.bundle.name}</bonita.bundle.root.folder>
+        <bonita.download.base.url>https://github.com/bonitasoft/bonita-platform-releases/releases/download</bonita.download.base.url>
+        <bonita.download.full.url>${bonita.download.base.url}/${bonita.branding.version}/${bonita.bundle.name}.zip</bonita.download.full.url>
+        <application.folder.name>my-application</application.folder.name>
     </properties>
 
     <build>
@@ -30,19 +32,24 @@
                         </goals>
                         <configuration>
                             <tasks>
-                                <get src="https://github.com/bonitasoft/bonita-platform-releases/releases/download/${BONITA_BRANDING_VERSION}/${bonita.bundle.name}.zip" 
-                                    dest="${bonita.bundle.rootfolder}.zip" />
-                                <unzip
-                                        src="${bonita.bundle.rootfolder}.zip"
-                                        dest="${project.build.directory}" />
-                                <unzip
-                                        src="${bonita.bundle.rootfolder}/server/webapps/bonita.war"
-                                        dest="${bonita.bundle.rootfolder}/server/webapps/bonita/" />
-                                <delete file="${bonita.bundle.rootfolder}/server/webapps/bonita.war" />
-                                <copy overwrite="true" todir="${bonita.bundle.rootfolder}/server/webapps/bonita/WEB-INF/classes/my-application">
-                                    <fileset dir="my-application" />
+                                <echo message="Downloading Bonita Tomcat Bundle from url: ${bonita.download.full.url}..." />
+                                <delete dir="build" failonerror="false" />
+                                <mkdir dir="build" />
+                                <get src="${bonita.download.full.url}" dest="${bonita.bundle.root.folder}.zip" />
+
+                                <echo message="Preparing Bonita Application Bundle structure..." />
+                                <unzip src="${bonita.bundle.root.folder}.zip" dest="build/" />
+                                <unzip src="${bonita.bundle.root.folder}/server/webapps/bonita.war" dest="${bonita.bundle.root.folder}/server/webapps/bonita/" />
+                                <delete file="${bonita.bundle.root.folder}/server/webapps/bonita.war" />
+
+                                <echo message="Adding your Bonita Application contained in folder ${application.folder.name}..." />
+                                <copy overwrite="true" todir="${bonita.bundle.root.folder}/server/webapps/bonita/WEB-INF/classes/${application.folder.name}">
+                                    <fileset dir="${application.folder.name}" />
                                 </copy>
-                                <zip destfile="${bonita.bundle.rootfolder}-my-application.zip" basedir="${bonita.bundle.rootfolder}" />
+
+                                <echo message="Packaging your Bonita Application inside Bonita Tomcat Bundle..." />
+                                <zip destfile="${bonita.bundle.root.folder}-${application.folder.name}.zip" basedir="${bonita.bundle.root.folder}" />
+                                <echo message="Your Bonita Application has been successfully packaged under ${bonita.bundle.root.folder}-${application.folder.name}.zip." />
                             </tasks>
                         </configuration>
                     </execution>

@@ -22,4 +22,9 @@ Bonita users and customers to build the self-contained Bonita Applications.
 
 * Clone this GitHub repository
 * Put you Bonita artifacts in `my-application/` folder
-* run `mvnw package` of `mvwn.bat package`
+* run `./mvnw package` of `mvwn.bat package`
+
+
+## Specify a precise Bonita version
+
+Pass Maven extra parameter ``
