@@ -1,14 +1,14 @@
 # Bonita Application Bundle packager tool
 
-Bonita Application Bundle packager tool is a tool provided by Bonitasoft to allow
-Bonita users and customers to build the self-contained Bonita Applications.
+Bonita Application Bundle packager tool is provided by Bonitasoft to allow
+Bonita users and customers to build their self-contained Bonita Applications.
 
 
 ## Pre-requisites
 
 * Have Java JDK 11 installed and configured (available in default PATH)
 * Have an internet connection available
-* [SUBSCRIPTION only] Having Maven configured to access Bonita restricted Maven artifact repository with your Enterprise personal access credentials (Bonita Jfrog Repository)
+* [SUBSCRIPTION only] Having Maven configured to access Bonita Artifact Repository
 
 
 ## What the packager tool does
@@ -24,14 +24,14 @@ Bonita users and customers to build the self-contained Bonita Applications.
 ### Community edition
 
 * [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) this GitHub repository
-* Put you Bonita artifacts in `community/my-application/` folder
-* Run `./mvnw package -f community` (Unix / MacOS) or `mvwn.bat package -f community` (Windows)
+* Put your Bonita artifacts in `community/my-application/` folder
+* Run `./mvnw package -f community` (Unix / MacOS) or `mvwn.cmd package -f community` (Windows)
 
 ### Subscription edition
 
 * [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) this GitHub repository
-* Put you Bonita artifacts in `subscription/my-application/` folder
-* Run `./mvnw package -f subscription` (Unix / MacOS) or `mvwn.bat package -f subscription` (Windows)
+* Put your Bonita artifacts in `subscription/my-application/` folder
+* Run `./mvnw package -f subscription` (Unix / MacOS) or `mvwn.cmd package -f subscription` (Windows)
 
 
 ## Specify a precise Bonita version to use

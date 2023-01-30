@@ -1,3 +1,4 @@
+### Maven template
 target/
 pom.xml.tag
 pom.xml.releaseBackup
@@ -7,3 +8,15 @@ release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
+
+### Intellij
+*.iml
+.idea
+*.ipr
+*.iws
+.shelf
+
+### Eclipse
+.project
+.settings
+.classpath
