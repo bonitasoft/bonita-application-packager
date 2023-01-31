@@ -12,12 +12,16 @@
     <properties>
         <bonita.tech.version>7.15.1</bonita.tech.version>
         <bonita.branding.version>2022.2-u1</bonita.branding.version>
+
+        <bonita.application.folder.name>my-application</bonita.application.folder.name>
+
+        <project.build.tmp.directory>${project.build.directory}/tmp</project.build.tmp.directory>
+        <project.build.tmp.working.directory>${project.build.tmp.directory}/build</project.build.tmp.working.directory>
+
         <bonita.bundle.name>BonitaSubscription-${bonita.branding.version}</bonita.bundle.name>
-        <bonita.bundle.working.folder>${project.build.directory}/tmpBuildDir</bonita.bundle.working.folder>
-        <bonita.bundle.root.folder>${bonita.bundle.working.folder}/${bonita.bundle.name}</bonita.bundle.root.folder>
-        <bonita.download.base.url>https://github.com/bonitasoft/bonita-platform-releases/releases/download</bonita.download.base.url>
-        <bonita.download.full.url>${bonita.download.base.url}/${bonita.branding.version}/${bonita.bundle.name}.zip</bonita.download.full.url>
-        <application.folder.name>my-application</application.folder.name>
+        <bonita.bundle.root.folder>${project.build.tmp.working.directory}/${bonita.bundle.name}</bonita.bundle.root.folder>
+        <bonita.bundle.final.dest.file>${project.build.directory}/${bonita.bundle.name}-app-bundle.zip</bonita.bundle.final.dest.file>
+        <bonita.download.bundle.zip>${project.build.tmp.download.directory}/${bonita.bundle.name}.zip</bonita.download.bundle.zip>
     </properties>
 
     <build>
@@ -40,7 +44,7 @@
                                     <version>${bonita.tech.version}</version>
                                     <type>zip</type>
                                     <overWrite>true</overWrite>
-                                    <outputDirectory>${bonita.bundle.working.folder}</outputDirectory>
+                                    <outputDirectory>${project.build.tmp.working.directory}</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
@@ -50,6 +54,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
                 <executions>
                     <execution>
                         <id>prepare-application-bundle-structure</id>
@@ -58,40 +63,24 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <tasks>
-                                <echo message="Preparing Bonita Application Bundle structure..." />
-                                <unzip src="${project.build.directory}/${bonita.bundle.name}.zip" dest="${bonita.bundle.working.folder}" />
-                                <unzip src="${bonita.bundle.root.folder}/server/webapps/bonita.war" dest="${bonita.bundle.root.folder}/server/webapps/bonita/" />
+                            <target>
+                                <echo level="info" message="Preparing Bonita Application Bundle structure..." />
+                                <unzip src="${bonita.bundle.root.folder}/server/webapps/bonita.war"
+                                       dest="${bonita.bundle.root.folder}/server/webapps/bonita" />
                                 <delete file="${bonita.bundle.root.folder}/server/webapps/bonita.war" />
 
-                                <echo message="Adding your Bonita Application contained in folder ${application.folder.name}..." />
-                                <copy overwrite="true" todir="${bonita.bundle.root.folder}/server/webapps/bonita/WEB-INF/classes/${application.folder.name}">
-                                    <fileset dir="${application.folder.name}" />
+                                <echo level="info" message="Adding your Bonita Application contained in folder ${bonita.application.folder.name}..." />
+                                <copy overwrite="true" todir="${bonita.bundle.root.folder}/server/webapps/bonita/WEB-INF/classes/${bonita.application.folder.name}">
+                                    <fileset dir="${bonita.application.folder.name}" />
                                 </copy>
 
-                                <echo message="Packaging your Bonita Application inside Bonita Tomcat Bundle..." />
-                            </tasks>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.4.2</version>
-                <executions>
-                    <execution>
-                        <id>generate-package</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <configuration>
-                            <appendAssemblyId>false</appendAssemblyId>
-                            <finalName>${bonita.bundle.name}-${application.folder.name}</finalName>
-                            <descriptors>
-                                <descriptor>assembly.xml</descriptor>
-                            </descriptors>
+                                <echo level="info" message="Packaging your Bonita Application inside Bonita Tomcat Bundle..." />
+                                <zip destfile="${bonita.bundle.final.dest.file}">
+                                    <zipfileset dir="${project.build.tmp.working.directory}" excludes="**/*.sh,**/*.bat" />
+                                    <zipfileset dir="${project.build.tmp.working.directory}" includes="**/*.sh,**/*.bat" filemode="0740" />
+                                </zip>
+                                <echo level="info" message="Your Bonita Application has been successfully packaged under ${bonita.bundle.final.dest.file}" />
+                            </target>
                         </configuration>
                     </execution>
                 </executions>
