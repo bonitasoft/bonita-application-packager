@@ -16,6 +16,8 @@ Bonita users and customers to build their self-contained Bonita Applications.
 * Downloads the Bonita Tomcat bundle from the internet
 * Extracts the bundle
 * Adds your Bonita Application contained in `my-application/` folder
+* Removes provided Bonita generic applications (such as Bonita User Application and Bonita Admin Application)
+that are not useful to run along with your Bonita Application
 * Re-packages the Bonita Tomcat bundle with your Bonita Application inside (under a new name)
 
 
@@ -25,19 +27,18 @@ Bonita users and customers to build their self-contained Bonita Applications.
 
 * [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) this GitHub repository
 * Put your Bonita artifacts in `community/my-application/` folder
-* Run the command bellow with the Bonita version to use. The version must follow the [branding format](https://documentation.bonitasoft.com/bonita/latest/version-update/product-versioning#_technical_id) (e.g. `2023.1-u0`).
-  * Unix / MacOS: `./mvnw package -f community -Dbonita.branding.version=<version>`
-  * Windows: `mvwn.cmd package -f community -Dbonita.branding.version=<version>`
+* Run the command below with the Bonita version to use. The version must follow the [branding format](https://documentation.bonitasoft.com/bonita/latest/version-update/product-versioning#_technical_id) (e.g. `2023.1-u0`).
+  * Unix / MacOS: `./mvnw [clean] package -f community -Dbonita.branding.version=<version>`
+  * Windows: `mvwn.cmd [clean] package -f community -Dbonita.branding.version=<version>`
 * If you are behind a proxy, pass the following parameters: `-Dhttp.proxyHost=proxy -Dhttp.proxyPort=8080`
 
 ### Subscription edition
 
 * [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) this GitHub repository
 * Put your Bonita artifacts in `subscription/my-application/` folder
-* Run `./mvnw package -f subscription` (Unix / MacOS) or `mvwn.cmd package -f subscription` (Windows)
-* Run the command bellow with the Bonita version to use. The version must follow the [technical format](https://documentation.bonitasoft.com/bonita/latest/version-update/product-versioning#_technical_id) (e.g. `8.0.0`).
-    * Unix / MacOS: `./mvnw package -f subscription -Dbonita.tech.version=<version>`
-    * Windows: `mvwn.cmd package -f subscription -Dbonita.tech.version=<version>`
+* Run the command below with the Bonita version to use. The version must follow the [technical format](https://documentation.bonitasoft.com/bonita/latest/version-update/product-versioning#_technical_id) (e.g. `8.0.0`).
+    * Unix / MacOS: `./mvnw [clean] package -f subscription -Dbonita.tech.version=<version>`
+    * Windows: `mvwn.cmd [clean] package -f subscription -Dbonita.tech.version=<version>`
 * If you are behind a proxy, no need to pass extra parameters. Your Maven local settings will be used instead.
 
 

@@ -17,14 +17,18 @@
 
         <project.build.tmp.directory>${project.build.directory}/tmp</project.build.tmp.directory>
         <project.build.tmp.download.directory>${project.build.tmp.directory}/download</project.build.tmp.download.directory>
-        <project.build.tmp.working.directory>${project.build.tmp.directory}/build</project.build.tmp.working.directory>
+        <project.build.tmp.working.directory>${project.build.tmp.directory}/build-${bonita.branding.version}</project.build.tmp.working.directory>
 
         <bonita.bundle.name>BonitaCommunity-${bonita.branding.version}</bonita.bundle.name>
         <bonita.bundle.root.folder>${project.build.tmp.working.directory}/${bonita.bundle.name}</bonita.bundle.root.folder>
         <bonita.bundle.final.dest.file>${project.build.directory}/${bonita.bundle.name}-app-bundle.zip</bonita.bundle.final.dest.file>
+
         <bonita.download.base.url>https://github.com/bonitasoft/bonita-platform-releases/releases/download</bonita.download.base.url>
         <bonita.download.full.url>${bonita.download.base.url}/${bonita.branding.version}/${bonita.bundle.name}.zip</bonita.download.full.url>
         <bonita.download.bundle.zip>${project.build.tmp.download.directory}/${bonita.bundle.name}.zip</bonita.download.bundle.zip>
+
+        <bonita.default.page.folder>${bonita.bundle.root.folder}/server/webapps/bonita/WEB-INF/classes/org/bonitasoft/web/page</bonita.default.page.folder>
+        <bonita.default.application.folder>${bonita.bundle.root.folder}/server/webapps/bonita/WEB-INF/classes/org/bonitasoft/web/application</bonita.default.application.folder>
     </properties>
 
     <build>
@@ -57,6 +61,12 @@
                                 <copy overwrite="true" todir="${bonita.bundle.root.folder}/server/webapps/bonita/WEB-INF/classes/${bonita.application.folder.name}">
                                     <fileset dir="${bonita.application.folder.name}" />
                                 </copy>
+
+                                <echo level="info" message="Removing provided Bonita generic applications resources..." />
+                                <delete>
+                                    <fileset dir="${bonita.default.page.folder}" excludes="final/,editonly/"/>
+                                    <fileset dir="${bonita.default.application.folder}" excludes="final/"/>
+                                </delete>
 
                                 <echo level="info" message="Packaging your Bonita Application inside Bonita Tomcat Bundle..." />
                                 <zip destfile="${bonita.bundle.final.dest.file}">
