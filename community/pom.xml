@@ -10,7 +10,8 @@
     <packaging>pom</packaging>
 
     <properties>
-        <bonita.branding.version>2022.2-u0</bonita.branding.version>
+        <!-- Minimum Bonita version is 2023.1-u0 -->
+        <bonita.branding.version>2023.1-u0</bonita.branding.version>
 
         <bonita.application.folder.name>my-application</bonita.application.folder.name>
 
