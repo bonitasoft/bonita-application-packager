@@ -1,0 +1,57 @@
+<project>
+    <!-- Check if a Bonita Tomcat Bundle is present in the commmunity/bonita-tomcat folder-->
+    <target name="check-bonita-tomcat-present">
+        <pathconvert property="bonita.tomcat.present" setonempty="false">
+            <path>
+                <fileset dir="${bonita.bundle.local.directory}" includes="${bonita.bundle.name}.zip"/>
+            </path>
+        </pathconvert>
+    </target>
+
+    <!-- Copy the local Bonita Tomcat Bundle to the download temp folder-->
+    <target name="copy-bonita-tomcat" depends="check-bonita-tomcat-present" if="bonita.tomcat.present">
+        <echo level="info" message="Copying local Bonita Tomcat Bundle..."/>
+        <mkdir dir="${bonita.build.tmp.download.directory}"/>
+        <copy overwrite="true" todir="${bonita.build.tmp.download.directory}">
+            <fileset file="${bonita.bundle.local.directory}/${bonita.bundle.name}.zip"/>
+        </copy>
+    </target>
+
+    <!-- Download the Bonita Tomcat Bundle from Github if none is present locally -->
+    <target name="download-bonita-tomcat" depends="check-bonita-tomcat-present" unless="bonita.tomcat.present">
+        <echo level="info" message="Downloading Bonita Tomcat Bundle from url: ${bonita.download.full.url}..."/>
+        <mkdir dir="${bonita.build.tmp.download.directory}"/>
+        <get src="${bonita.download.full.url}" dest="${bonita.download.bundle.zip}" skipexisting="true"/>
+    </target>
+
+    <!-- Main execution to package the my-application into the Bonita Tomcat Bundle -->
+    <target name="main" depends="copy-bonita-tomcat,download-bonita-tomcat">
+        <echo level="info" message="Preparing Bonita Application Bundle structure..."/>
+        <mkdir dir="${bonita.build.tmp.working.directory}"/>
+        <unzip src="${bonita.download.bundle.zip}" dest="${bonita.build.tmp.working.directory}"/>
+        <unzip src="${bonita.bundle.root.folder}/server/webapps/bonita.war"
+               dest="${bonita.bundle.root.folder}/server/webapps/bonita"/>
+        <delete file="${bonita.bundle.root.folder}/server/webapps/bonita.war"/>
+
+        <echo level="info"
+              message="Adding your Bonita Application contained in folder ${bonita.application.folder.name}..."/>
+        <copy overwrite="true"
+              todir="${bonita.bundle.root.folder}/server/webapps/bonita/WEB-INF/classes/${bonita.application.folder.name}">
+            <fileset dir="${bonita.application.folder.name}"/>
+        </copy>
+
+        <echo level="info" message="Removing provided Bonita generic applications resources..."/>
+        <delete>
+            <fileset dir="${bonita.default.page.folder}" excludes="final/,editonly/"/>
+            <fileset dir="${bonita.default.application.folder}" excludes="final/"/>
+        </delete>
+
+        <echo level="info" message="Packaging your Bonita Application inside Bonita Tomcat Bundle..."/>
+        <zip destfile="${bonita.bundle.final.dest.file}">
+            <zipfileset dir="${bonita.build.tmp.working.directory}" excludes="**/*.sh,**/*.bat"/>
+            <zipfileset dir="${bonita.build.tmp.working.directory}" includes="**/*.sh,**/*.bat" filemode="0740"/>
+        </zip>
+        <echo level="info"
+              message="Your Bonita Application has been successfully packaged under ${bonita.bundle.final.dest.file}"/>
+    </target>
+</project>
