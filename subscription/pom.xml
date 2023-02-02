@@ -13,87 +13,116 @@
         <!-- Minimum Bonita version is 8.0.0 -->
         <bonita.tech.version>8.0.0</bonita.tech.version>
 
+        <bonita.tomcat.local>false</bonita.tomcat.local>
+
         <bonita.application.folder.name>my-application</bonita.application.folder.name>
 
-        <project.build.tmp.directory>${project.build.directory}/tmp</project.build.tmp.directory>
-        <project.build.tmp.working.directory>${project.build.tmp.directory}/build-${bonita.tech.version}</project.build.tmp.working.directory>
+        <bonita.bundle.local.directory>${basedir}/bonita-tomcat/</bonita.bundle.local.directory>
+
+        <bonita.build.tmp.directory>${project.build.directory}/tmp</bonita.build.tmp.directory>
+        <bonita.build.tmp.working.directory>${bonita.build.tmp.directory}/build-${bonita.tech.version}</bonita.build.tmp.working.directory>
     </properties>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>unpack-bonita-sp-tomcat-bundle</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.bonitasoft.distrib</groupId>
-                                    <artifactId>bundle-tomcat-sp</artifactId>
-                                    <version>${bonita.tech.version}</version>
-                                    <type>zip</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>${project.build.tmp.working.directory}</outputDirectory>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <id>prepare-application-bundle-structure</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <!-- Init properties depending on the name of the bundle root directory (e.g. BonitaSubscription-2023.1-u0)-->
-                                <dirset id="working.directory.content" dir="${project.build.tmp.working.directory}" includes="*"/>
-                                <property name="bonita.bundle.name" refid="working.directory.content"/>
-                                <property name="bonita.bundle.root.folder" value="${project.build.tmp.working.directory}/${bonita.bundle.name}"/>
-                                <property name="bonita.bundle.final.dest.file" value="${project.build.directory}/${bonita.bundle.name}-app-bundle.zip"/>
-                                <property name="bonita.default.page.folder" value="${bonita.bundle.root.folder}/server/webapps/bonita/WEB-INF/classes/org/bonitasoft/web/page"/>
-                                <property name="bonita.default.application.folder" value="${bonita.bundle.root.folder}/server/webapps/bonita/WEB-INF/classes/org/bonitasoft/web/application"/>
+    <profiles>
+        <profile>
+            <id>bundle-tomcat-local</id>
+            <activation>
+                <property>
+                    <name>bonita.tomcat.local</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <executions>
+                            <execution>
+                                <id>unzip-bonita-tomcat-local</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <echo level="info" message="Unzipping local Bonita Tomcat Bundle..."/>
+                                        <unzip dest="${bonita.build.tmp.working.directory}"
+                                               failOnEmptyArchive="true"
+                                               overwrite="true">
+                                            <fileset dir="${bonita.bundle.local.directory}" includes="BonitaSubscription-*.zip"/>
+                                        </unzip>
+                                        <ant antfile="${basedir}/build.xml">
+                                            <target name="main"/>
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
 
-                                <echo level="info" message="Preparing Bonita Application Bundle structure..."/>
-                                <unzip src="${bonita.bundle.root.folder}/server/webapps/bonita.war"
-                                       dest="${bonita.bundle.root.folder}/server/webapps/bonita"/>
-                                <delete file="${bonita.bundle.root.folder}/server/webapps/bonita.war"/>
-
-                                <echo level="info" message="Adding your Bonita Application contained in folder ${bonita.application.folder.name}..."/>
-                                <copy overwrite="true" todir="${bonita.bundle.root.folder}/server/webapps/bonita/WEB-INF/classes/${bonita.application.folder.name}">
-                                    <fileset dir="${bonita.application.folder.name}"/>
-                                </copy>
-
-                                <echo level="info" message="Removing provided Bonita generic applications resources..." />
-                                <delete>
-                                    <fileset dir="${bonita.default.page.folder}" excludes="final/,editonly/"/>
-                                    <fileset dir="${bonita.default.application.folder}" excludes="final/"/>
-                                </delete>
-
-                                <echo level="info" message="Packaging your Bonita Application inside Bonita Tomcat Bundle..."/>
-                                <zip destfile="${bonita.bundle.final.dest.file}">
-                                    <zipfileset dir="${project.build.tmp.working.directory}" excludes="**/*.sh,**/*.bat"/>
-                                    <zipfileset dir="${project.build.tmp.working.directory}" includes="**/*.sh,**/*.bat" filemode="0740"/>
-                                </zip>
-                                <echo level="info" message="Your Bonita Application has been successfully packaged under ${bonita.bundle.final.dest.file}"/>
-                            </target>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+        <profile>
+            <id>bundle-tomcat-artifactory</id>
+            <activation>
+                <property>
+                    <name>bonita.tomcat.local</name>
+                    <value>!true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>unpack-bonita-sp-tomcat-bundle</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>unpack</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>org.bonitasoft.distrib</groupId>
+                                            <artifactId>bundle-tomcat-sp</artifactId>
+                                            <version>${bonita.tech.version}</version>
+                                            <type>zip</type>
+                                            <overWrite>true</overWrite>
+                                            <outputDirectory>${bonita.build.tmp.working.directory}</outputDirectory>
+                                        </artifactItem>
+                                    </artifactItems>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <executions>
+                            <execution>
+                                <id>prepare-application-bundle-structure</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <ant antfile="${basedir}/build.xml">
+                                            <target name="main"/>
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
