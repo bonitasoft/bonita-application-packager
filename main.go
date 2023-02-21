@@ -3,6 +3,7 @@ package main
 import (
 	"archive/zip"
 	"context"
+	_ "embed"
 	"errors"
 	"flag"
 	"fmt"
@@ -37,10 +38,13 @@ var (
 	tag                = flag.String("tag", dockerImagePrefix, "Docker image tag to use when building")
 	verbose            = flag.Bool("verbose", false, "Enable verbose (debug) mode")
 	appPath            string
+
+	// Go directive to include Dockerfile in the binary:
+	//go:embed Dockerfile
+	dockFile []byte
 )
 
 func main() {
-	flag.Parse()
 	flag.Usage = func() {
 		w := flag.CommandLine.Output()
 		fmt.Fprintln(w, "This tool allows to build a Bonita Tomcat bundle or a Bonita Docker image containing your custom application")
@@ -48,6 +52,7 @@ func main() {
 		fmt.Fprintf(w, "Options are:\n\n")
 		flag.PrintDefaults()
 	}
+	flag.Parse()
 
 	if !*dockerFlag && !*tomcatFlag {
 		fmt.Printf("Please specify '-tomcat' if you want to build a Bonita Tomcat Bundle or '-docker' if you want to build a Bonita Docker image\n\n")
@@ -166,14 +171,18 @@ func imageBuild(dockerClient *client.Client, edition string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*200)
 	defer cancel()
 
-	// copy application file in docker context dir:
 	dockerContextDir := "dockerContext"
+	cleanContextFolder(dockerContextDir) // if was already present
+
+	// copy application file in Docker build context folder:
 	appName := filepath.Base(appPath)
 	if err := cp.Copy(appPath, filepath.Join(dockerContextDir, appName)); err != nil {
 		return err
 	}
+
 	dockerfile := "Dockerfile"
-	if err := cp.Copy(dockerfile, filepath.Join(dockerContextDir, dockerfile)); err != nil {
+	// write the Dockerfile embedded in this program to Docker build context folder:
+	if err := os.WriteFile(filepath.Join(dockerContextDir, dockerfile), dockFile, 0644); err != nil {
 		return err
 	}
 
