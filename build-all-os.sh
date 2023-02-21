@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
 
-package=$1
-if [[ -z "$package" ]]; then
-  echo "usage: $0 <package-name>"
-  echo "example: $0 bonita-packager"
-  exit 1
-fi
+package=bonita-packager
 
 env GOOS=windows GOARCH=amd64 go build -o dist/${package}-amd64.exe
 if [ $? -ne 0 ]; then
