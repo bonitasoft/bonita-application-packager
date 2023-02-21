@@ -8,8 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # build and publish in parallel: linux/amd64, windows/amd64
-        goos: [ linux, windows ]
+        # build and publish in parallel: linux/amd64, windows/amd64, darwin/amd64
+        goos: [ linux, windows, darwin ]
     steps:
       - uses: actions/checkout@v3
 
@@ -18,14 +18,22 @@ jobs:
         with:
           go-version: 1.18
 
-      - name: Build
+      - name: Build amd64 binaries
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: amd64
-        run: go build -o dist/
+        run: go build -o dist/bonita-packager-${{ matrix.goos }}-amd64
+
+      - name: Build arm64 Darwin (MacOS) binaries
+        if: matrix.goos == 'darwin'
+        env:
+          GOOS: darwin
+          GOARCH: arm64
+        run: go build -o dist/bonita-packager-darwin-arm64
 
       - name: Archive built artifacts
         uses: actions/upload-artifact@v3
         with:
           name: bonita-application-packager
           path: dist
+          retention-days: 10
