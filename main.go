@@ -33,11 +33,18 @@ var (
 	dockerFlag = flag.Bool("docker", false, `Choose to build a docker image containing your application,
 	use -tag to specify the name of your built image
 	By default, it builds a 'Community' Docker image
-	use -subscription to build a 'Subscription' Docker image (you must have the rights to download Bonita Subscription Docker base image from Bonita Artifact Repository)`)
+	use -subscription to build a 'Subscription' Docker image (you must have the rights to download Bonita Subscription Docker base image from Bonita Artifact Repository)
+	use -base-image-name to specify a Bonita docker base image different from the default, which is
+		'bonita' in Community edition
+		'quay.io/bonitasoft/bonita-subscription' in Subscription edition
+	use -base-image-version to specify a Bonita docker base image version different from the default ('latest')`)
 	dockerSubscription = flag.Bool("subscription", false, "Choose to build a Subscription-based docker image (default build a Community image)")
 	tag                = flag.String("tag", dockerImagePrefix, "Docker image tag to use when building")
 	verbose            = flag.Bool("verbose", false, "Enable verbose (debug) mode")
-	appPath            string
+	baseImageName      = flag.String("base-image-name", "", "Specify Bonita base docker image name")
+	baseImageVersion   = flag.String("base-image-version", "", "Specify Bonita base docker image version")
+
+	appPath string
 
 	// Go directive to include Dockerfile in the binary:
 	//go:embed Dockerfile
@@ -203,23 +210,28 @@ func imageBuild(dockerClient *client.Client, edition string) error {
 	if *tag == dockerImagePrefix {
 		fullDockerImageName = *tag + edition
 	}
-	baseImageName := "bonitasoft.jfrog.io/docker-snapshot-local/bonita-community" // FIXME
-	baseImageVersion := "8.0-SNAPSHOT"                                            // FIXME
-	if *dockerSubscription {
-		baseImageName = "docker.io/bonitasoft/bonita-subscription" // FIXME
-		baseImageVersion = "latest"                                // FIXME
+	if *baseImageName == "" {
+		*baseImageName = "bonita" // bonitasoft.jfrog.io/docker-snapshot-local/bonita-community to test it internally
+		if *dockerSubscription {
+			*baseImageName = "quay.io/bonitasoft/bonita-subscription" // bonitasoft.jfrog.io/docker-snapshot-local/bonita-subscription to test it internally
+		}
+	}
+	if *baseImageVersion == "" {
+		*baseImageVersion = "latest" // FIXME
 	}
 	opts := types.ImageBuildOptions{
 		Dockerfile: dockerfile,
-		Tags:       []string{fullDockerImageName},
-		Remove:     true,
+		// PullParent: true, // requires docker login with credentials
+		Tags:   []string{fullDockerImageName},
+		Remove: true,
 		BuildArgs: map[string]*string{
-			"BONITA_IMAGE_NAME":       &baseImageName,
-			"BONITA_IMAGE_VERSION":    &baseImageVersion,
+			"BONITA_IMAGE_NAME":       baseImageName,
+			"BONITA_IMAGE_VERSION":    baseImageVersion,
 			"CUSTOM_APPLICATION_FILE": &appName},
 	}
 	if *verbose {
-		fmt.Println("Building image: " + fullDockerImageName)
+		fmt.Println("Using base docker image: " + *baseImageName + ":" + *baseImageVersion)
+		fmt.Println("Building new image: " + fullDockerImageName)
 	}
 
 	res, err := dockerClient.ImageBuild(ctx, dockerContext, opts)
