@@ -186,7 +186,13 @@ func imageBuild(dockerClient *client.Client, edition string) error {
 		return err
 	}
 
-	dockerContext, err := archive.TarWithOptions(dockerContextDir+"/", &archive.TarOptions{})
+	// On Windows `archive.TarWithOptions` requires an absolute directory path
+	dockerContextDirAbsPath, err := filepath.Abs(dockerContextDir)
+	if err != nil {
+		return err
+	}
+
+	dockerContext, err := archive.TarWithOptions(dockerContextDirAbsPath, &archive.TarOptions{})
 	if err != nil {
 		return err
 	}
