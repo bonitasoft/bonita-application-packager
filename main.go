@@ -23,7 +23,7 @@ import (
 
 const (
 	_sep              = os.PathSeparator
-	dockerImagePrefix = "bonitasoft/bonita-package-docker-"
+	dockerImagePrefix = "bonita-application-"
 )
 
 var (
@@ -32,7 +32,7 @@ var (
 	dockerFlag = flag.Bool("docker", false, `Choose to build a docker image containing your application,
 	use -tag to specify the name of your built image
 	By default, it builds a 'Community' Docker image
-	use -subscription to build a 'Subscription" Docker image (you must have the rights to download Bonita Subscription Docker base image)`)
+	use -subscription to build a 'Subscription' Docker image (you must have the rights to download Bonita Subscription Docker base image from Bonita Artifact Repository)`)
 	dockerSubscription = flag.Bool("subscription", false, "Choose to build a Subscription-based docker image (default build a Community image)")
 	tag                = flag.String("tag", dockerImagePrefix, "Docker image tag to use when building")
 	verbose            = flag.Bool("verbose", false, "Enable verbose (debug) mode")
@@ -85,8 +85,7 @@ func main() {
 	}
 
 	if *dockerFlag {
-		fmt.Println("Building Docker image (Community & Subscription editions)")
-		buildDockerImages(dockerEdition)
+		buildDockerImage(dockerEdition)
 	}
 }
 
@@ -98,8 +97,8 @@ func buildTomcatBundle(applicationMatches []string) {
 	}
 	if len(bundleMatches) == 0 || len(applicationMatches) == 0 {
 		fmt.Println("Please place:")
-		fmt.Println(" * in src/ folder, the ZIP file of Bonita Tomcat Bundle (Eg. BonitaCommunity-2023.1-u0.zip, BonitaSubscription-2023.1-u2.zip)")
-		fmt.Println(" * in src/my-application/ folder the ZIP file containing your entire application")
+		fmt.Println(" * in src folder, the ZIP file of Bonita Tomcat Bundle (Eg. BonitaCommunity-2023.1-u0.zip, BonitaSubscription-2023.1-u2.zip)")
+		fmt.Println(" * in src" + string(_sep) + "my-application folder the ZIP file containing your entire application")
 		fmt.Println("and then re-run this program")
 		return
 	}
@@ -146,7 +145,7 @@ func buildTomcatBundle(applicationMatches []string) {
 
 }
 
-func buildDockerImages(dockerEdition string) {
+func buildDockerImage(dockerEdition string) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		fmt.Println(err.Error())
@@ -165,12 +164,15 @@ func imageBuild(dockerClient *client.Client, edition string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*200)
 	defer cancel()
 
-	tar, err := archive.TarWithOptions("src/", &archive.TarOptions{})
+	dockerContext, err := archive.TarWithOptions("src/", &archive.TarOptions{})
 	if err != nil {
 		return err
 	}
 
-	fullDockerImageName := *tag + edition
+	fullDockerImageName := *tag
+	if *tag == dockerImagePrefix {
+		fullDockerImageName = *tag + edition
+	}
 	opts := types.ImageBuildOptions{
 		Dockerfile: "Dockerfile." + edition,
 		Tags:       []string{fullDockerImageName},
@@ -182,7 +184,7 @@ func imageBuild(dockerClient *client.Client, edition string) error {
 		fmt.Println("Building image: " + fullDockerImageName)
 	}
 
-	res, err := dockerClient.ImageBuild(ctx, tar, opts)
+	res, err := dockerClient.ImageBuild(ctx, dockerContext, opts)
 	if err != nil {
 		fmt.Println("Error building image")
 		return err
@@ -232,14 +234,12 @@ func unzipFile(zipFile string, outputDir string) {
 
 	for _, f := range archive.File {
 		filePath := filepath.Join(outputDir, f.Name)
-		//fmt.Println("unzipping file ", filePath)
 
 		if !strings.HasPrefix(filePath, filepath.Clean(outputDir)+string(os.PathSeparator)) {
 			fmt.Println("invalid file path")
 			return
 		}
 		if f.FileInfo().IsDir() {
-			//fmt.Println("creating directory...")
 			os.MkdirAll(filePath, os.ModePerm)
 			continue
 		}
@@ -328,17 +328,18 @@ func addFilesToZip(w *zip.Writer, basePath, baseInZip string) error {
 				return err
 			}
 			// then add files inside it
-			if err := addFilesToZip(w, fullfilepath, filepath.Join(baseInZip, file.Name())); err != nil {
+			if err := addFilesToZip(w, fullfilepath, baseInZip+"/"+file.Name()); err != nil {
 				return err
 			}
 		} else if file.Mode().IsRegular() {
+			if *verbose {
+				fmt.Println("Adding zip file", filepath.Join(baseInZip, file.Name()))
+			}
 			dat, err := ioutil.ReadFile(fullfilepath)
-			// fileRead, err := os.Open(fullfilepath) // dat, err := ioutil.ReadFile(fullfilepath)
 			if err != nil {
 				return err
 			}
-			//w.OpenFile(name, O_RDWR|O_CREATE|O_TRUNC, file.Mode())
-			fh := &zip.FileHeader{Name: filepath.Join(baseInZip, file.Name())}
+			fh := &zip.FileHeader{Name: baseInZip + "/" + file.Name()}
 			fh.SetMode(file.Mode())
 			f, err := w.CreateHeader(fh)
 			// f, err := w.Create(filepath.Join(baseInZip, file.Name()))
@@ -346,7 +347,6 @@ func addFilesToZip(w *zip.Writer, basePath, baseInZip string) error {
 				return err
 			}
 			_, err = f.Write(dat)
-			// _, err = io.Copy(f, fileRead) //f.Write(dat)
 			if err != nil {
 				return err
 			}
