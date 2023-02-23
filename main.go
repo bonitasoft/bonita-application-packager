@@ -328,15 +328,18 @@ func addFilesToZip(w *zip.Writer, basePath, baseInZip string) error {
 				return err
 			}
 			// then add files inside it
-			if err := addFilesToZip(w, fullfilepath, filepath.Join(baseInZip, file.Name())); err != nil {
+			if err := addFilesToZip(w, fullfilepath, baseInZip+"/"+file.Name()); err != nil {
 				return err
 			}
 		} else if file.Mode().IsRegular() {
+			if *verbose {
+				fmt.Println("Adding zip file", filepath.Join(baseInZip, file.Name()))
+			}
 			dat, err := ioutil.ReadFile(fullfilepath)
 			if err != nil {
 				return err
 			}
-			fh := &zip.FileHeader{Name: filepath.Join(baseInZip, file.Name())}
+			fh := &zip.FileHeader{Name: baseInZip + "/" + file.Name()}
 			fh.SetMode(file.Mode())
 			f, err := w.CreateHeader(fh)
 			// f, err := w.Create(filepath.Join(baseInZip, file.Name()))
