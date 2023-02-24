@@ -4,6 +4,8 @@ import (
 	"archive/zip"
 	"context"
 	_ "embed"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -37,12 +39,15 @@ var (
 	use -base-image-name to specify a Bonita docker base image different from the default, which is
 		'bonita' in Community edition
 		'quay.io/bonitasoft/bonita-subscription' in Subscription edition
-	use -base-image-version to specify a Bonita docker base image version different from the default ('latest')`)
+	use -base-image-version to specify a Bonita docker base image version different from the default ('latest')
+	use -registry-username and -registry-password if you need to authenticate against the docker image registry to pull Bonita docker base image`)
 	dockerSubscription = flag.Bool("subscription", false, "Choose to build a Subscription-based docker image (default build a Community image)")
 	tag                = flag.String("tag", dockerImagePrefix, "Docker image tag to use when building")
 	verbose            = flag.Bool("verbose", false, "Enable verbose (debug) mode")
 	baseImageName      = flag.String("base-image-name", "", "Specify Bonita base docker image name")
 	baseImageVersion   = flag.String("base-image-version", "", "Specify Bonita base docker image version")
+	registryUsername   = flag.String("registry-username", "", "Specify username to authenticate against Bonita base docker image Registry")
+	registryPassword   = flag.String("registry-password", "", "Specify corresponding password to authenticate against Bonita base docker image Registry")
 
 	appPath string
 
@@ -58,17 +63,19 @@ func main() {
 		fmt.Fprintf(w, "%s [-tomcat|-docker] [OPTIONS] PATH_TO_APPLICATION_ZIP_FILE\n", os.Args[0])
 		fmt.Fprintf(w, "Options are:\n\n")
 		flag.PrintDefaults()
+		fmt.Fprintf(w, "\nExample:\n")
+		fmt.Fprintf(w, "\t%s -verbose -docker -subscription -registry-username customer@bonitasoft.com -registry-password <MY_SECRET_PWD> /tmp/my-application.zip\n", os.Args[0])
+		fmt.Fprintf(w, "\t%s -verbose -tomcat /tmp/my-application.zip\n", os.Args[0])
 	}
 	flag.Parse()
 
 	if !*dockerFlag && !*tomcatFlag {
-		fmt.Printf("Please specify '-tomcat' if you want to build a Bonita Tomcat Bundle or '-docker' if you want to build a Bonita Docker image\n\n")
+		fmt.Printf("\nPlease specify '-tomcat' if you want to build a Bonita Tomcat Bundle or '-docker' if you want to build a Bonita Docker image\n\n")
 		flag.Usage()
 		os.Exit(1)
 	}
 
 	arguments := flag.Args()
-	// fmt.Println("flag.Args():", arguments)
 	if len(arguments) != 1 {
 		fmt.Printf("Please provide one and only one argument that points to your application ZIP file\n\n")
 		flag.Usage()
@@ -219,11 +226,54 @@ func imageBuild(dockerClient *client.Client, edition string) error {
 	if *baseImageVersion == "" {
 		*baseImageVersion = "latest" // FIXME
 	}
+	if err := pullBaseImage(*baseImageName, *baseImageVersion, dockerClient, ctx); err != nil {
+		return err
+	}
+	if err := buildCustomDockerImage(appName, baseImageName, baseImageVersion, ctx, dockerClient, dockerContext, fullDockerImageName, verbose); err != nil {
+		return err
+	}
+	fmt.Printf("\nSuccessfully created Docker image '%s'\n\n", fullDockerImageName)
+	return nil
+}
+
+func pullBaseImage(baseImageName, baseImageVersion string, dockerClient *client.Client, ctx context.Context) error {
+	authConfig := types.AuthConfig{
+		Username: *registryUsername,
+		Password: *registryPassword,
+	}
+	encodedJSON, err := json.Marshal(authConfig)
+	if err != nil {
+		return err
+	}
+	authStr := base64.URLEncoding.EncodeToString(encodedJSON)
+
+	if *verbose {
+		fmt.Println("Pulling base docker image: " + baseImageName + ":" + baseImageVersion)
+	}
+
+	out, err := dockerClient.ImagePull(ctx, baseImageName+":"+baseImageVersion, types.ImagePullOptions{RegistryAuth: authStr})
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	if *verbose {
+		termFd, isTerm := term.GetFdInfo(os.Stderr)
+		err = jsonmessage.DisplayJSONMessagesStream(out, os.Stderr, termFd, isTerm, nil)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func buildCustomDockerImage(appName string, baseImageName *string, baseImageVersion *string, ctx context.Context, dockerClient *client.Client, dockerContext io.ReadCloser, fullDockerImageName string, verbose *bool) error {
+	dockerfile := "Dockerfile"
 	opts := types.ImageBuildOptions{
 		Dockerfile: dockerfile,
-		// PullParent: true, // requires docker login with credentials
-		Tags:   []string{fullDockerImageName},
-		Remove: true,
+		Tags:       []string{fullDockerImageName},
+		Remove:     true,
 		BuildArgs: map[string]*string{
 			"BONITA_IMAGE_NAME":       baseImageName,
 			"BONITA_IMAGE_VERSION":    baseImageVersion,
@@ -249,7 +299,6 @@ func imageBuild(dockerClient *client.Client, edition string) error {
 			return err
 		}
 	}
-	fmt.Printf("\nSuccessfully created Docker image '%s'\n\n", fullDockerImageName)
 	return nil
 }
 
