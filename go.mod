@@ -4,10 +4,12 @@ go 1.18
 
 require (
 	github.com/docker/docker v23.0.1+incompatible
+	github.com/moby/term v0.0.0-20221205130635-1aeaba878587
 	github.com/otiai10/copy v1.9.0
 )
 
 require (
+	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
 	github.com/Microsoft/go-winio v0.6.0 // indirect
 	github.com/containerd/containerd v1.6.17 // indirect
 	github.com/docker/distribution v2.8.1+incompatible // indirect
@@ -17,7 +19,6 @@ require (
 	github.com/klauspost/compress v1.15.15 // indirect
 	github.com/moby/patternmatcher v0.5.0 // indirect
 	github.com/moby/sys/sequential v0.5.0 // indirect
-	github.com/moby/term v0.0.0-20221205130635-1aeaba878587 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.3-0.20211202183452-c5a74bcca799 // indirect
