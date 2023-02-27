@@ -25,22 +25,27 @@ import (
 )
 
 const (
-	_sep              = os.PathSeparator
-	dockerImagePrefix = "bonita-application-"
+	_sep                    = os.PathSeparator
+	dockerImagePrefix       = "bonita-application-"
+	defaultBaseImageName    = "bonita"
+	defaultBaseImageNameSp  = "quay.io/bonitasoft/bonita-subscription"
+	defaultBaseImageVersion = "latest"
 )
 
 var (
 	// Flags:
 	tomcatFlag = flag.Bool("tomcat", false, "Choose to build a Tomcat bundle containing your application")
-	dockerFlag = flag.Bool("docker", false, `Choose to build a docker image containing your application,
-	use -tag to specify the name of your built image
-	By default, it builds a 'Community' Docker image
-	use -subscription to build a 'Subscription' Docker image (you must have the rights to download Bonita Subscription Docker base image from Bonita Artifact Repository)
-	use -base-image-name to specify a Bonita docker base image different from the default, which is
-		'bonita' in Community edition
-		'quay.io/bonitasoft/bonita-subscription' in Subscription edition
-	use -base-image-version to specify a Bonita docker base image version different from the default ('latest')
-	use -registry-username and -registry-password if you need to authenticate against the docker image registry to pull Bonita docker base image`)
+	dockerFlag = flag.Bool("docker", false, fmt.Sprintf(
+		`Choose to build a docker image containing your application,
+use -tag to specify the name of your built image
+By default, it builds a 'Community' Docker image
+use -subscription to build a 'Subscription' Docker image (you must have the rights to download Bonita Subscription Docker base image from Bonita Artifact Repository)
+use -base-image-name to specify a Bonita docker base image different from the default, which is
+    '%s' in Community edition
+    '%s' in Subscription edition
+use -base-image-version to specify a Bonita docker base image version different from the default ('%s')
+use -registry-username and -registry-password if you need to authenticate against the docker image registry to pull Bonita docker base image`,
+		defaultBaseImageName, defaultBaseImageNameSp, defaultBaseImageVersion))
 	dockerSubscription = flag.Bool("subscription", false, "Choose to build a Subscription-based docker image (default build a Community image)")
 	tag                = flag.String("tag", dockerImagePrefix, "Docker image tag to use when building")
 	verbose            = flag.Bool("verbose", false, "Enable verbose (debug) mode")
@@ -185,7 +190,7 @@ func imageBuild(dockerClient *client.Client, edition string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*200)
 	defer cancel()
 
-	dockerContextDir := "dockerContext"
+	dockerContextDir := "dockerContext"  // TODO location should be under OS temp folder
 	cleanContextFolder(dockerContextDir) // if was already present
 
 	// copy application file in Docker build context folder:
@@ -218,13 +223,14 @@ func imageBuild(dockerClient *client.Client, edition string) error {
 		fullDockerImageName = *tag + edition
 	}
 	if *baseImageName == "" {
-		*baseImageName = "bonita" // bonitasoft.jfrog.io/docker-snapshot-local/bonita-community to test it internally
 		if *dockerSubscription {
-			*baseImageName = "quay.io/bonitasoft/bonita-subscription" // bonitasoft.jfrog.io/docker-snapshot-local/bonita-subscription to test it internally
+			*baseImageName = defaultBaseImageNameSp
+		} else {
+			*baseImageName = defaultBaseImageName
 		}
 	}
 	if *baseImageVersion == "" {
-		*baseImageVersion = "latest" // FIXME
+		*baseImageVersion = defaultBaseImageVersion
 	}
 	if err := pullBaseImage(*baseImageName, *baseImageVersion, dockerClient, ctx); err != nil {
 		return err
