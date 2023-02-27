@@ -53,6 +53,7 @@ use -registry-username and -registry-password if you need to authenticate agains
 	baseImageVersion   = flag.String("base-image-version", "", "Specify Bonita base docker image version")
 	registryUsername   = flag.String("registry-username", "", "Specify username to authenticate against Bonita base docker image Registry")
 	registryPassword   = flag.String("registry-password", "", "Specify corresponding password to authenticate against Bonita base docker image Registry")
+	configurationFile  = flag.String("configuration-file", "", "(Optional) Specify path to the Bonita configuration file (.bconf) associated to your custom application")
 
 	appPath string
 
@@ -64,7 +65,7 @@ use -registry-username and -registry-password if you need to authenticate agains
 func main() {
 	flag.Usage = func() {
 		w := flag.CommandLine.Output()
-		fmt.Fprintln(w, "This tool allows to build a Bonita Tomcat bundle or a Bonita Docker image containing your custom application")
+		fmt.Fprintln(w, "This tool allows to build a Bonita Tomcat bundle or a Bonita Docker image containing your custom application.")
 		fmt.Fprintf(w, "%s [-tomcat|-docker] [OPTIONS] PATH_TO_APPLICATION_ZIP_FILE\n", os.Args[0])
 		fmt.Fprintf(w, "Options are:\n\n")
 		flag.PrintDefaults()
@@ -75,36 +76,47 @@ func main() {
 	flag.Parse()
 
 	if !*dockerFlag && !*tomcatFlag {
-		fmt.Printf("\nPlease specify '-tomcat' if you want to build a Bonita Tomcat Bundle or '-docker' if you want to build a Bonita Docker image\n\n")
+		fmt.Printf("\nPlease specify '-tomcat' if you want to build a Bonita Tomcat Bundle or '-docker' if you want to build a Bonita Docker image.\n\n")
 		flag.Usage()
 		os.Exit(1)
 	}
 
 	arguments := flag.Args()
 	if len(arguments) != 1 {
-		fmt.Printf("Please provide one and only one argument that points to your application ZIP file\n\n")
+		fmt.Printf("Please provide one and only one argument that points to your application ZIP file.\n\n")
 		flag.Usage()
 		os.Exit(1)
 	}
 
 	appPath = arguments[0]
 	if !Exists(appPath) {
-		fmt.Printf("Application ZIP file %s does not exist\n\n", appPath)
+		fmt.Printf("Application ZIP file '%s' does not exist.\n\n", appPath)
 		flag.Usage()
 		os.Exit(1)
 	}
 
-	fmt.Println("Verbose mode          :", *verbose)
-	fmt.Println("Build Tomcat bundle   :", *tomcatFlag)
-	fmt.Println("Build Docker image    :", *dockerFlag)
-	fmt.Println("Custom application    :", appPath)
+	if *configurationFile != "" {
+		if !Exists(*configurationFile) {
+			fmt.Printf("Bonita configuration file '%s' does not exist.\n\n", *configurationFile)
+			flag.Usage()
+			os.Exit(1)
+		}
+	}
+
+	fmt.Println("Verbose mode              :", *verbose)
+	fmt.Println("Build Tomcat bundle       :", *tomcatFlag)
+	fmt.Println("Build Docker image        :", *dockerFlag)
+	fmt.Println("Custom application        :", appPath)
+	if *configurationFile != "" {
+		fmt.Println("Bonita configuration file :", *configurationFile)
+	}
 	var dockerEdition = "community"
 	if *dockerFlag {
-		fmt.Println("Docker image tag name :", *tag)
+		fmt.Println("Docker image tag name     :", *tag)
 		if *dockerSubscription {
 			dockerEdition = "subscription"
 		}
-		fmt.Println("Docker image edition  :", dockerEdition)
+		fmt.Println("Docker image edition      :", dockerEdition)
 	}
 
 	if *tomcatFlag {
@@ -149,9 +161,10 @@ func buildTomcatBundle() {
 		panic(err)
 	}
 	fmt.Println("Copying your custom application inside Bonita")
-	err = cp.Copy(appPath, filepath.Join("output", bundleName, "server", "webapps", "bonita", "WEB-INF", "classes", "my-application", filepath.Base(appPath)))
-	if err != nil {
-		panic(err)
+	copyResourceToCustomAppFolder(bundleName, appPath)
+	if *configurationFile != "" {
+		fmt.Println("Copying your Bonita configuration file inside Bonita")
+		copyResourceToCustomAppFolder(bundleName, *configurationFile)
 	}
 	fmt.Println("Re-packing Bonita bundle containing your application")
 	err = zipDirectory(filepath.Join("output", bundleName+"-application.zip"), filepath.Join("output", bundleName), bundleName)
@@ -169,6 +182,13 @@ func buildTomcatBundle() {
 	}
 	fmt.Println("\nSuccessfully re-packaged self-contained application:", filepath.Join("output", bundleName+"-application.zip"))
 
+}
+
+func copyResourceToCustomAppFolder(bundleName string, resource string) {
+	err := cp.Copy(resource, filepath.Join("output", bundleName, "server", "webapps", "bonita", "WEB-INF", "classes", "my-application", filepath.Base(resource)))
+	if err != nil {
+		panic(err)
+	}
 }
 
 func buildDockerImage(dockerEdition string) {
@@ -190,13 +210,23 @@ func imageBuild(dockerClient *client.Client, edition string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*200)
 	defer cancel()
 
-	dockerContextDir := "dockerContext"  // TODO location should be under OS temp folder
+	dockerContextDir := "dockerContext" // TODO location should be under OS temp folder
+	dockerResourcesDir := filepath.Join(dockerContextDir, "resources")
 	cleanContextFolder(dockerContextDir) // if was already present
 
-	// copy application file in Docker build context folder:
+	// copy application file in Docker build context resources folder:
 	appName := filepath.Base(appPath)
-	if err := cp.Copy(appPath, filepath.Join(dockerContextDir, appName)); err != nil {
+	if err := cp.Copy(appPath, filepath.Join(dockerResourcesDir, appName)); err != nil {
 		return err
+	}
+
+	bconfName := ""
+	if *configurationFile != "" {
+		// copy bconf file in Docker build context resources folder:
+		bconfName = filepath.Base(*configurationFile)
+		if err := cp.Copy(*configurationFile, filepath.Join(dockerResourcesDir, bconfName)); err != nil {
+			return err
+		}
 	}
 
 	dockerfile := "Dockerfile"
@@ -235,7 +265,7 @@ func imageBuild(dockerClient *client.Client, edition string) error {
 	if err := pullBaseImage(*baseImageName, *baseImageVersion, dockerClient, ctx); err != nil {
 		return err
 	}
-	if err := buildCustomDockerImage(appName, baseImageName, baseImageVersion, ctx, dockerClient, dockerContext, fullDockerImageName, verbose); err != nil {
+	if err := buildCustomDockerImage(baseImageName, baseImageVersion, ctx, dockerClient, dockerContext, fullDockerImageName); err != nil {
 		return err
 	}
 	fmt.Printf("\nSuccessfully created Docker image '%s'\n\n", fullDockerImageName)
@@ -274,16 +304,15 @@ func pullBaseImage(baseImageName, baseImageVersion string, dockerClient *client.
 	return nil
 }
 
-func buildCustomDockerImage(appName string, baseImageName *string, baseImageVersion *string, ctx context.Context, dockerClient *client.Client, dockerContext io.ReadCloser, fullDockerImageName string, verbose *bool) error {
+func buildCustomDockerImage(baseImageName *string, baseImageVersion *string, ctx context.Context, dockerClient *client.Client, dockerContext io.ReadCloser, fullDockerImageName string) error {
 	dockerfile := "Dockerfile"
 	opts := types.ImageBuildOptions{
 		Dockerfile: dockerfile,
 		Tags:       []string{fullDockerImageName},
 		Remove:     true,
 		BuildArgs: map[string]*string{
-			"BONITA_IMAGE_NAME":       baseImageName,
-			"BONITA_IMAGE_VERSION":    baseImageVersion,
-			"CUSTOM_APPLICATION_FILE": &appName},
+			"BONITA_IMAGE_NAME":    baseImageName,
+			"BONITA_IMAGE_VERSION": baseImageVersion},
 	}
 	if *verbose {
 		fmt.Println("Using base docker image: " + *baseImageName + ":" + *baseImageVersion)
