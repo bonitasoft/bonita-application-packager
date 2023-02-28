@@ -26,18 +26,18 @@ jobs:
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: amd64
-        run: go build -o dist/bonita-packager-${{ matrix.goos }}-amd64
+        run: go build -o dist/${{ matrix.goos }}-amd64/
 
       - name: Build arm64 Darwin (MacOS) binaries
         if: matrix.goos == 'darwin'
         env:
           GOOS: darwin
           GOARCH: arm64
-        run: go build -o dist/bonita-packager-darwin-arm64
+        run: go build -o dist/darwin-arm64/
 
-      # - name: Archive built artifacts
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: bonita-application-packager
-      #     path: dist
-      #     retention-days: 10
+      - name: Archive built artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: bonita-application-packager
+          path: dist
+          retention-days: 1
