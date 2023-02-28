@@ -35,9 +35,9 @@ jobs:
           GOARCH: arm64
         run: go build -o dist/bonita-packager-darwin-arm64
 
-      - name: Archive built artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: bonita-application-packager
-          path: dist
-          retention-days: 10
+      # - name: Archive built artifacts
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: bonita-application-packager
+      #     path: dist
+      #     retention-days: 10
