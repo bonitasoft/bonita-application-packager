@@ -228,9 +228,14 @@ func imageBuild(dockerClient *client.Client, edition string) error {
 		return err
 	}
 
-	dockerContextDir := "dockerContext" // TODO location should be under OS temp folder
+	// create temporary folder to store the docker context needed to build the image
+	dockerContextDir, err := os.MkdirTemp("", "docker-context")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(dockerContextDir)
+
 	dockerResourcesDir := filepath.Join(dockerContextDir, "resources")
-	cleanContextFolder(dockerContextDir) // if was already present
 
 	// copy application file in Docker build context resources folder:
 	appName := filepath.Base(appPath)
@@ -258,7 +263,6 @@ func imageBuild(dockerClient *client.Client, edition string) error {
 	if err != nil {
 		return err
 	}
-	defer cleanContextFolder(dockerContextDir)
 
 	dockerContext, err := archive.TarWithOptions(dockerContextDirAbsPath, &archive.TarOptions{})
 	if err != nil {
@@ -340,17 +344,6 @@ func buildCustomDockerImage(baseImageName *string, baseImageVersion *string, ctx
 		}
 	}
 	return nil
-}
-
-func cleanContextFolder(dockerContextDir string) {
-	if Exists(dockerContextDir) {
-		if *verbose {
-			fmt.Println("Cleaning temporary docker context folder")
-		}
-		if err := os.RemoveAll(dockerContextDir); err != nil {
-			panic(err)
-		}
-	}
 }
 
 func unzipFile(zipFile string, outputDir string) {
