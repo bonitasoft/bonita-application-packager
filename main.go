@@ -34,7 +34,8 @@ const (
 
 var (
 	// Flags:
-	tomcatFlag = flag.Bool("tomcat", false, "Choose to build a Tomcat bundle containing your application")
+	tomcatFlag = flag.Bool("tomcat", false, `Choose to build a Bonita Tomcat bundle containing your application
+use -bonita-tomcat-bundle to specify the path (on your machine) to the Bonita tomcat bundle file (Bonita*.zip); otherwise the file is looked for in the current folder`)
 	dockerFlag = flag.Bool("docker", false, fmt.Sprintf(
 		`Choose to build a docker image containing your application,
 use -tag to specify the name of your built image
@@ -54,6 +55,7 @@ use -registry-username and -registry-password if you need to authenticate agains
 	registryUsername   = flag.String("registry-username", "", "Specify username to authenticate against Bonita base docker image Registry")
 	registryPassword   = flag.String("registry-password", "", "Specify corresponding password to authenticate against Bonita base docker image Registry")
 	configurationFile  = flag.String("configuration-file", "", "(Optional) Specify path to the Bonita configuration file (.bconf) associated to your custom application (Subscription only)")
+	tomcatBundleFile   = flag.String("bonita-tomcat-bundle", "", "(Optional) Specify path (on your machine) to the Bonita tomcat bundle file (Bonita*.zip) used to build")
 
 	appPath string
 
@@ -133,29 +135,23 @@ func ExitWithError(message string, messageArgs ...any) {
 }
 
 func buildTomcatBundle() {
-	// Try to find a Bonita zip file in current folder:
-	bundleMatches, err := filepath.Glob("Bonita*.zip")
-	if err != nil {
-		panic(err)
-	}
-	if len(bundleMatches) == 0 {
-		fmt.Println("Bonita Tomcat Bundle not found in current folder")
-		fmt.Println("Please copy it here (Eg. BonitaCommunity-2023.1-u0.zip, BonitaSubscription-2023.1-u2.zip)")
-		fmt.Println("and then re-run this program")
+	bundleAbsolutePath := checkTomcatBundleValidity()
+	if bundleAbsolutePath == "" {
 		return
 	}
 	if Exists("output") {
 		if *verbose {
-			fmt.Println("Cleaning 'output' directory")
+			fmt.Println("Cleaning 'output/' folder")
 		}
 		if err := os.RemoveAll("output"); err != nil {
+			fmt.Println("Failed to clean 'output/' folder")
 			panic(err)
 		}
 	}
-	bundleNameAndPath := bundleMatches[0]
-	bundleName := bundleNameAndPath[0:strings.Index(bundleNameAndPath, ".zip")] // until end of string
+	bundleNameAndPath := filepath.Base(bundleAbsolutePath)                      // just the name of the zip file without the path
+	bundleName := bundleNameAndPath[0:strings.Index(bundleNameAndPath, ".zip")] // just the name without '.zip'
 	fmt.Printf("Unpacking Bonita Tomcat bundle %s.zip\n", bundleName)
-	unzipFile(bundleNameAndPath, "output")
+	unzipFile(bundleAbsolutePath, "output")
 	fmt.Println("Unpacking Bonita WAR file")
 	unzipFile(filepath.Join("output", bundleName, "server", "webapps", "bonita.war"), filepath.Join("output", bundleName, "server", "webapps", "bonita"))
 	if *verbose {
@@ -171,14 +167,14 @@ func buildTomcatBundle() {
 		copyResourceToCustomAppFolder(bundleName, *configurationFile)
 	}
 	fmt.Println("Re-packing Bonita bundle containing your application")
-	err = zipDirectory(filepath.Join("output", bundleName+"-application.zip"), filepath.Join("output", bundleName), bundleName)
+	err := zipDirectory(filepath.Join("output", bundleName+"-application.zip"), filepath.Join("output", bundleName), bundleName)
 	if err != nil {
 		panic(err)
 	}
 	tempfolderToZip := filepath.Join("output", bundleName)
 	if Exists(tempfolderToZip) {
 		if *verbose {
-			fmt.Println("Cleaning temporary directory structure")
+			fmt.Println("Cleaning temporary folder structure")
 		}
 		if err := os.RemoveAll(tempfolderToZip); err != nil {
 			panic(err)
@@ -186,6 +182,37 @@ func buildTomcatBundle() {
 	}
 	fmt.Println("\nSuccessfully re-packaged self-contained application:", filepath.Join("output", bundleName+"-application.zip"))
 
+}
+
+// check if the Bonita Tomcat bundle is passed as parameter, or found in current folder, exists
+func checkTomcatBundleValidity() string {
+	if *tomcatBundleFile != "" {
+		if !Exists(*tomcatBundleFile) {
+			panic("Bonita Tomcat bundle file passed as parameter does not exist: " + *tomcatBundleFile)
+		} else {
+			if *verbose {
+				fmt.Println("Using Bonita Tomcat bundle file passed as parameter", *tomcatBundleFile)
+			}
+			return *tomcatBundleFile
+		}
+	} else {
+		// Try to find a Bonita zip file in current folder:
+		bundleMatches, err := filepath.Glob("Bonita*.zip")
+		if err != nil {
+			panic(err)
+		}
+		if len(bundleMatches) == 0 {
+			fmt.Println("Bonita Tomcat Bundle not found in current folder.")
+			fmt.Println("Please copy it here (Eg. BonitaCommunity-2023.1-u0.zip, BonitaSubscription-2023.1-u2.zip)")
+			fmt.Println("or use parameter -bonita-tomcat-bundle <PATH_TO_TOMCAT_BUNDLE> if stored somewhere else.")
+			fmt.Println("Then re-run this program")
+			return ""
+		}
+		if *verbose {
+			fmt.Println("Using Bonita Tomcat bundle file found in current folder", bundleMatches[0])
+		}
+		return bundleMatches[0]
+	}
 }
 
 func copyResourceToCustomAppFolder(bundleName string, resource string) {
@@ -448,9 +475,9 @@ func addFilesToZip(w *zip.Writer, basePath, baseInZip string) error {
 		if file.IsDir() {
 			// create dir first
 			path := filepath.Join(baseInZip, file.Name())
-			if *verbose {
-				fmt.Println("Creating zip dir", path)
-			}
+			// if *verbose {
+			// 	fmt.Println("Creating zip dir", path)
+			// }
 			_, err := w.Create(path + "/")
 			if err != nil {
 				return err
@@ -460,9 +487,9 @@ func addFilesToZip(w *zip.Writer, basePath, baseInZip string) error {
 				return err
 			}
 		} else if file.Mode().IsRegular() {
-			if *verbose {
-				fmt.Println("Adding zip file", filepath.Join(baseInZip, file.Name()))
-			}
+			// if *verbose {
+			// 	fmt.Println("Adding zip file", filepath.Join(baseInZip, file.Name()))
+			// }
 			dat, err := ioutil.ReadFile(fullfilepath)
 			if err != nil {
 				return err
