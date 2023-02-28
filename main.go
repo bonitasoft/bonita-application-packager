@@ -107,6 +107,9 @@ func main() {
 	fmt.Println("Build Tomcat bundle       :", *tomcatFlag)
 	fmt.Println("Build Docker image        :", *dockerFlag)
 	fmt.Println("Custom application        :", appPath)
+	if *tomcatBundleFile != "" {
+		fmt.Println("Bonita Tomcat bundle file :", *tomcatBundleFile)
+	}
 	if *configurationFile != "" {
 		fmt.Println("Bonita configuration file :", *configurationFile)
 	}
@@ -135,7 +138,7 @@ func ExitWithError(message string, messageArgs ...any) {
 }
 
 func buildTomcatBundle() {
-	bundleAbsolutePath := checkTomcatBundleValidity()
+	bundleAbsolutePath := validateTomcatBundle()
 	if bundleAbsolutePath == "" {
 		return
 	}
@@ -185,10 +188,14 @@ func buildTomcatBundle() {
 }
 
 // check if the Bonita Tomcat bundle is passed as parameter, or found in current folder, exists
-func checkTomcatBundleValidity() string {
+func validateTomcatBundle() string {
 	if *tomcatBundleFile != "" {
 		if !Exists(*tomcatBundleFile) {
-			panic("Bonita Tomcat bundle file passed as parameter does not exist: " + *tomcatBundleFile)
+			fmt.Println("Bonita Tomcat bundle file passed as parameter does not exist: " + *tomcatBundleFile)
+			return ""
+		} else if !strings.HasSuffix(*tomcatBundleFile, ".zip") {
+			fmt.Println("Bonita Tomcat bundle file passed as parameter is not a proper Bonita Tomcat bundle ZIP file: " + *tomcatBundleFile)
+			return ""
 		} else {
 			if *verbose {
 				fmt.Println("Using Bonita Tomcat bundle file passed as parameter", *tomcatBundleFile)
@@ -475,9 +482,6 @@ func addFilesToZip(w *zip.Writer, basePath, baseInZip string) error {
 		if file.IsDir() {
 			// create dir first
 			path := filepath.Join(baseInZip, file.Name())
-			// if *verbose {
-			// 	fmt.Println("Creating zip dir", path)
-			// }
 			_, err := w.Create(path + "/")
 			if err != nil {
 				return err
@@ -487,9 +491,6 @@ func addFilesToZip(w *zip.Writer, basePath, baseInZip string) error {
 				return err
 			}
 		} else if file.Mode().IsRegular() {
-			// if *verbose {
-			// 	fmt.Println("Adding zip file", filepath.Join(baseInZip, file.Name()))
-			// }
 			dat, err := ioutil.ReadFile(fullfilepath)
 			if err != nil {
 				return err
@@ -497,7 +498,6 @@ func addFilesToZip(w *zip.Writer, basePath, baseInZip string) error {
 			fh := &zip.FileHeader{Name: baseInZip + "/" + file.Name()}
 			fh.SetMode(file.Mode())
 			f, err := w.CreateHeader(fh)
-			// f, err := w.Create(filepath.Join(baseInZip, file.Name()))
 			if err != nil {
 				return err
 			}
