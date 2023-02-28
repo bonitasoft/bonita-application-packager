@@ -53,7 +53,7 @@ use -registry-username and -registry-password if you need to authenticate agains
 	baseImageVersion   = flag.String("base-image-version", "", "Specify Bonita base docker image version")
 	registryUsername   = flag.String("registry-username", "", "Specify username to authenticate against Bonita base docker image Registry")
 	registryPassword   = flag.String("registry-password", "", "Specify corresponding password to authenticate against Bonita base docker image Registry")
-	configurationFile  = flag.String("configuration-file", "", "(Optional) Specify path to the Bonita configuration file (.bconf) associated to your custom application")
+	configurationFile  = flag.String("configuration-file", "", "(Optional) Specify path to the Bonita configuration file (.bconf) associated to your custom application (Subscription only)")
 
 	appPath string
 
@@ -76,30 +76,28 @@ func main() {
 	flag.Parse()
 
 	if !*dockerFlag && !*tomcatFlag {
-		fmt.Printf("\nPlease specify '-tomcat' if you want to build a Bonita Tomcat Bundle or '-docker' if you want to build a Bonita Docker image.\n\n")
-		flag.Usage()
-		os.Exit(1)
+		ExitWithError("Please specify '-tomcat' if you want to build a Bonita Tomcat Bundle or '-docker' if you want to build a Bonita Docker image.")
 	}
 
 	arguments := flag.Args()
 	if len(arguments) != 1 {
-		fmt.Printf("Please provide one and only one argument that points to your application ZIP file.\n\n")
-		flag.Usage()
-		os.Exit(1)
+		ExitWithError("Please provide one and only one argument that points to your application ZIP file.")
 	}
 
 	appPath = arguments[0]
+	if !strings.HasSuffix(appPath, ".zip") {
+		ExitWithError("Application file '%s' is not a ZIP file.", appPath)
+	}
 	if !Exists(appPath) {
-		fmt.Printf("Application ZIP file '%s' does not exist.\n\n", appPath)
-		flag.Usage()
-		os.Exit(1)
+		ExitWithError("Application ZIP file '%s' does not exist.", appPath)
 	}
 
 	if *configurationFile != "" {
+		if !strings.HasSuffix(*configurationFile, ".bconf") {
+			ExitWithError("Bonita configuration file '%s' is not a .bconf file.", *configurationFile)
+		}
 		if !Exists(*configurationFile) {
-			fmt.Printf("Bonita configuration file '%s' does not exist.\n\n", *configurationFile)
-			flag.Usage()
-			os.Exit(1)
+			ExitWithError("Bonita configuration file '%s' does not exist.", *configurationFile)
 		}
 	}
 
@@ -126,6 +124,12 @@ func main() {
 	if *dockerFlag {
 		buildDockerImage(dockerEdition)
 	}
+}
+
+func ExitWithError(message string, messageArgs ...any) {
+	fmt.Printf("\nError: "+message+"\n\n", messageArgs...)
+	flag.Usage()
+	os.Exit(1)
 }
 
 func buildTomcatBundle() {
