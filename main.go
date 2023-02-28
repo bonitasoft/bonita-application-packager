@@ -210,6 +210,20 @@ func imageBuild(dockerClient *client.Client, edition string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*200)
 	defer cancel()
 
+	if *baseImageName == "" {
+		if *dockerSubscription {
+			*baseImageName = defaultBaseImageNameSp
+		} else {
+			*baseImageName = defaultBaseImageName
+		}
+	}
+	if *baseImageVersion == "" {
+		*baseImageVersion = defaultBaseImageVersion
+	}
+	if err := pullBaseImage(*baseImageName, *baseImageVersion, dockerClient, ctx); err != nil {
+		return err
+	}
+
 	dockerContextDir := "dockerContext" // TODO location should be under OS temp folder
 	dockerResourcesDir := filepath.Join(dockerContextDir, "resources")
 	cleanContextFolder(dockerContextDir) // if was already present
@@ -240,30 +254,17 @@ func imageBuild(dockerClient *client.Client, edition string) error {
 	if err != nil {
 		return err
 	}
+	defer cleanContextFolder(dockerContextDir)
 
 	dockerContext, err := archive.TarWithOptions(dockerContextDirAbsPath, &archive.TarOptions{})
 	if err != nil {
 		return err
 	}
-
-	defer cleanContextFolder(dockerContextDir)
+	defer dockerContext.Close()
 
 	fullDockerImageName := *tag
 	if *tag == dockerImagePrefix {
 		fullDockerImageName = *tag + edition
-	}
-	if *baseImageName == "" {
-		if *dockerSubscription {
-			*baseImageName = defaultBaseImageNameSp
-		} else {
-			*baseImageName = defaultBaseImageName
-		}
-	}
-	if *baseImageVersion == "" {
-		*baseImageVersion = defaultBaseImageVersion
-	}
-	if err := pullBaseImage(*baseImageName, *baseImageVersion, dockerClient, ctx); err != nil {
-		return err
 	}
 	if err := buildCustomDockerImage(baseImageName, baseImageVersion, ctx, dockerClient, dockerContext, fullDockerImageName); err != nil {
 		return err
