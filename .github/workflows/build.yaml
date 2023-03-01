@@ -38,7 +38,6 @@ jobs:
         run: go build -o dist/darwin-arm64/
 
       - name: Archive built artifacts
-        if: {{ github.ref == 'ref/head/main' }}
         uses: actions/upload-artifact@v3
         with:
           name: bonita-application-packager
