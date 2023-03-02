@@ -2,7 +2,9 @@
 
 The Bonita Application Packager tool is provided by Bonitasoft to allow you to build a Bonita Tomcat bundle or a Bonita Docker image containing your custom application.
 
-The tool can be by both Community and Subscription users.
+The advantage of such a packaging is that Bonita automatically installs your entire application (pages, Rest API extensions, themes, BDM, ...) at startup, relieving you from having to install all artifacts by hand one by one.
+
+The tool can be used by both Community and Subscription users.
 
 
 ## Pre-requisites
@@ -25,7 +27,7 @@ The tool can be by both Community and Subscription users.
     * REST API Extensions
     * Themes
 * **(Subscription only)** The *Application Archive* generated with [Bonita Continuous Delivery](https://documentation.bonitasoft.com/bcd/latest/livingapp_build) is a proper candidate for a custom application.
-* **(Subscription only)** The *Application Configuration* (*.bconf* file) generated with [Bonita Continuous Delivery](https://documentation.bonitasoft.com/bcd/latest/livingapp_build) is an extra deployable artifact compatible with this tool.
+* **(Subscription only)** The *Application Configuration Archive* (*.bconf* file) generated with [Bonita Continuous Delivery](https://documentation.bonitasoft.com/bcd/latest/livingapp_build) is an extra deployable artifact compatible with this tool.
 * The custom application is located and accessible on your filesystem. 
 
 ### Bonita Tomcat bundle usage
@@ -135,7 +137,7 @@ bonita-application-packager -docker /path/to/my-custom-application.zip
 
 The result is a Docker image named `bonita-application-community`.
 
-Per default, the Bonita based image used is `bonita:latest`, located on [DockerHub](https://hub.docker.com/_/bonita).
+By default, the Bonita based image used is `bonita:latest`, located on [DockerHub](https://hub.docker.com/_/bonita).
 
 
 * Basic Subscription usage:
@@ -146,7 +148,7 @@ bonita-application-packager -docker -subscription -registry-username my-username
 
 The result is a Docker image named `bonita-application-subscription`.
 
-Per default, the Bonita based image used is `quay.io/bonitasoft/bonita-subscription:latest`.
+By default, the Bonita based image used is `quay.io/bonitasoft/bonita-subscription:latest`.
 
 
 * Specify the Bonita base image and version:
