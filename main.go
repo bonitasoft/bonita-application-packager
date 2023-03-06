@@ -35,7 +35,7 @@ const (
 var (
 	// Flags:
 	tomcatFlag = flag.Bool("tomcat", false, `Choose to build a Bonita Tomcat bundle containing your application
-use -bonita-tomcat-bundle to specify the path (on your machine) to the Bonita tomcat bundle file (Bonita*.zip); otherwise the file is looked for in the current folder`)
+use -bonita-tomcat-bundle to specify the path to the Bonita tomcat bundle file (Bonita*.zip); otherwise the file is looked for in the current folder`)
 	dockerFlag = flag.Bool("docker", false, fmt.Sprintf(
 		`Choose to build a docker image containing your application,
 use -tag to specify the name of your built image
@@ -55,7 +55,7 @@ use -registry-username and -registry-password if you need to authenticate agains
 	registryUsername   = flag.String("registry-username", "", "Specify username to authenticate against Bonita base docker image Registry")
 	registryPassword   = flag.String("registry-password", "", "Specify corresponding password to authenticate against Bonita base docker image Registry")
 	configurationFile  = flag.String("configuration-file", "", "(Optional) Specify path to the Bonita configuration file (.bconf) associated to your custom application (Subscription only)")
-	tomcatBundleFile   = flag.String("bonita-tomcat-bundle", "", "(Optional) Specify path (on your machine) to the Bonita tomcat bundle file (Bonita*.zip) used to build")
+	tomcatBundleFile   = flag.String("bonita-tomcat-bundle", "", "(Optional) Specify path to the Bonita tomcat bundle file (Bonita*.zip) used to build")
 
 	appPath string
 
