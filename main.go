@@ -71,7 +71,7 @@ use -registry-username and -registry-password if you need to authenticate agains
 func main() {
 	flag.Usage = func() {
 		w := flag.CommandLine.Output()
-		fmt.Fprintf(w, "%s version %s\n", os.Args[0], Version)
+		fmt.Fprintf(w, "Bonita Application Packager version %s\n", Version)
 		fmt.Fprintln(w, "This tool allows to build a Bonita Tomcat bundle or a Bonita Docker image containing your custom application.")
 		fmt.Fprintf(w, "%s [-tomcat|-docker] [OPTIONS] PATH_TO_APPLICATION_ZIP_FILE\n", os.Args[0])
 		fmt.Fprintf(w, "Options are:\n\n")
@@ -83,7 +83,7 @@ func main() {
 	flag.Parse()
 
 	if *version {
-		fmt.Printf("%s version %s\n", os.Args[0], Version)
+		fmt.Printf("Bonita Application Packager version %s\n", Version)
 		os.Exit(0)
 	}
 
