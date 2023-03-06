@@ -1,23 +1,30 @@
 #!/usr/bin/env bash
 
-package=bonita-packager
+version="${1:-development}"
 
-env GOOS=windows GOARCH=amd64 go build -o dist/${package}-amd64.exe
+echo "Building binary ${version} for Windows..."
+env GOOS=windows GOARCH=amd64 go build -o dist/windows-amd64/ -ldflags="-X 'main.Version=${version}'"
 if [ $? -ne 0 ]; then
     echo 'An error has occurred building binary for Windows! Aborting the script execution...'
     exit 1
 fi
-env GOOS=linux GOARCH=amd64 go build -o dist/${package}-linux
+
+echo "Building binary ${version} for Linux..."
+env GOOS=linux GOARCH=amd64 go build -o dist/linux-amd64/ -ldflags="-X 'main.Version=${version}'"
 if [ $? -ne 0 ]; then
     echo 'An error has occurred building binary for Linux! Aborting the script execution...'
     exit 1
 fi
-env GOOS=darwin GOARCH=amd64 go build -o dist/${package}-amd64-darwin
+
+echo "Building binary ${version} for MacOS amd64..."
+env GOOS=darwin GOARCH=amd64 go build -o dist/darwin-amd64/ -ldflags="-X 'main.Version=${version}'"
 if [ $? -ne 0 ]; then
     echo 'An error has occurred building binary for MacOS amd64! Aborting the script execution...'
     exit 1
 fi
-env GOOS=darwin GOARCH=arm64 go build -o dist/${package}-arm64-darwin
+
+echo "Building binary ${version} for MacOS arm64..."
+env GOOS=darwin GOARCH=arm64 go build -o dist/darwin-arm64/ -ldflags="-X 'main.Version=${version}'"
 if [ $? -ne 0 ]; then
     echo 'An error has occurred building binary for MacOS arm64! Aborting the script execution...'
     exit 1
