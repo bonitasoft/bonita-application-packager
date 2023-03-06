@@ -22,10 +22,10 @@ jobs:
           go-version: 'stable'
 
       - name: Build binaries
-        run: ./build-all-os.sh
+        run: ./build-all-os.sh ${{ github.event.inputs.version }}
 
       - name: Zip binaries
-        run: zip -r dist/bonita-application-packager.zip dist/
+        run: cd dist/ && zip -r bonita-application-packager.zip .
 
       - name: Create Release
         id: create_release 

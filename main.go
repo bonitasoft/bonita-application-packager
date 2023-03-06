@@ -33,6 +33,9 @@ const (
 )
 
 var (
+	// Version is overridden via ldflags
+	Version = "development"
+
 	// Flags:
 	tomcatFlag = flag.Bool("tomcat", false, `Choose to build a Bonita Tomcat bundle containing your application
 use -bonita-tomcat-bundle to specify the path to the Bonita tomcat bundle file (Bonita*.zip); otherwise the file is looked for in the current folder`)
@@ -56,6 +59,7 @@ use -registry-username and -registry-password if you need to authenticate agains
 	registryPassword   = flag.String("registry-password", "", "Specify corresponding password to authenticate against Bonita base docker image Registry")
 	configurationFile  = flag.String("configuration-file", "", "(Optional) Specify path to the Bonita configuration file (.bconf) associated to your custom application (Subscription only)")
 	tomcatBundleFile   = flag.String("bonita-tomcat-bundle", "", "(Optional) Specify path to the Bonita tomcat bundle file (Bonita*.zip) used to build")
+	version            = flag.Bool("version", false, "Print tool version and exit")
 
 	appPath string
 
@@ -67,6 +71,7 @@ use -registry-username and -registry-password if you need to authenticate agains
 func main() {
 	flag.Usage = func() {
 		w := flag.CommandLine.Output()
+		fmt.Fprintf(w, "%s version %s\n", os.Args[0], Version)
 		fmt.Fprintln(w, "This tool allows to build a Bonita Tomcat bundle or a Bonita Docker image containing your custom application.")
 		fmt.Fprintf(w, "%s [-tomcat|-docker] [OPTIONS] PATH_TO_APPLICATION_ZIP_FILE\n", os.Args[0])
 		fmt.Fprintf(w, "Options are:\n\n")
@@ -76,6 +81,11 @@ func main() {
 		fmt.Fprintf(w, "\t%s -verbose -tomcat /tmp/my-application.zip\n", os.Args[0])
 	}
 	flag.Parse()
+
+	if *version {
+		fmt.Printf("%s version %s\n", os.Args[0], Version)
+		os.Exit(0)
+	}
 
 	if !*dockerFlag && !*tomcatFlag {
 		ExitWithError("Please specify '-tomcat' if you want to build a Bonita Tomcat Bundle or '-docker' if you want to build a Bonita Docker image.")
