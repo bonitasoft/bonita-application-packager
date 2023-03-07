@@ -378,12 +378,10 @@ func buildCustomDockerImage(baseImageName *string, baseImageVersion *string, ctx
 
 	defer res.Body.Close()
 
-	if *verbose {
-		termFd, isTerm := term.GetFdInfo(os.Stderr)
-		err = jsonmessage.DisplayJSONMessagesStream(res.Body, os.Stderr, termFd, isTerm, nil)
-		if err != nil {
-			return err
-		}
+	termFd, isTerm := term.GetFdInfo(os.Stderr)
+	err = jsonmessage.DisplayJSONMessagesStream(res.Body, os.Stderr, termFd, isTerm, nil)
+	if err != nil {
+		return err
 	}
 	return nil
 }
