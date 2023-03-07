@@ -194,6 +194,8 @@ func buildTomcatBundle() {
 		}
 	}
 	fmt.Println("\nSuccessfully re-packaged self-contained application:", filepath.Join("output", bundleName+"-application.zip"))
+	fmt.Println("To use it, simply unzip it like your usual Bonita Tomcat bundle, and run ./start-bonita[.sh|.bat]")
+	fmt.Println("More info at https://documentation.bonitasoft.com/bonita/latest/runtime/tomcat-bundle")
 
 }
 
@@ -316,12 +318,18 @@ func imageBuild(dockerClient *client.Client, edition string) error {
 
 	fullDockerImageName := *tag
 	if *tag == dockerImagePrefix {
-		fullDockerImageName = *tag + edition
+		fullDockerImageName = *tag + edition + ":latest"
 	}
 	if err := buildCustomDockerImage(baseImageName, baseImageVersion, ctx, dockerClient, dockerContext, fullDockerImageName); err != nil {
 		return err
 	}
 	fmt.Printf("\nSuccessfully created Docker image '%s'\n\n", fullDockerImageName)
+	var extraDockerOptions string
+	if *dockerSubscription {
+		extraDockerOptions = "-v <MY_LICENSE_FOLDER>:/opt/bonita_lic "
+	}
+	fmt.Printf("You can now run it using 'docker run --name my-bonita-app -p 8080:8080 %s%s'\n", extraDockerOptions, fullDockerImageName)
+	fmt.Printf("Read https://documentation.bonitasoft.com/bonita/latest/runtime/bonita-docker-installation for complete options on how to run a Bonita-based Docker container\n")
 	return nil
 }
 
