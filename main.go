@@ -346,12 +346,10 @@ func pullBaseImage(baseImageName, baseImageVersion string, dockerClient *client.
 	}
 	defer out.Close()
 
-	if *verbose {
-		termFd, isTerm := term.GetFdInfo(os.Stderr)
-		err = jsonmessage.DisplayJSONMessagesStream(out, os.Stderr, termFd, isTerm, nil)
-		if err != nil {
-			return err
-		}
+	termFd, isTerm := term.GetFdInfo(os.Stderr)
+	err = jsonmessage.DisplayJSONMessagesStream(out, os.Stderr, termFd, isTerm, nil)
+	if err != nil {
+		return err
 	}
 
 	return nil
