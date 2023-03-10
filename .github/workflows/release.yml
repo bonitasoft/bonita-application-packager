@@ -27,25 +27,12 @@ jobs:
         run: ./build-all-os.sh ${{ github.event.inputs.version }}
 
       - name: Zip binaries
-        run: cd dist/ && zip -r bonita-application-packager.zip .
+        run: cd dist/ && zip -r bonita-application-packager-${{ github.event.inputs.version }}.zip .
 
       - name: Create Release
-        id: create_release 
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: ${{ github.event.inputs.version }}
-          release_name: Release ${{ github.event.inputs.version }}
-          draft: false
-          prerelease: false
-
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dist/bonita-application-packager.zip
-          asset_name: bonita-application-packager-${{ github.event.inputs.version }}.zip
-          asset_content_type: application/zip
+          tag: ${{ github.event.inputs.version }}
+          name: Release ${{ github.event.inputs.version }}
+          generateReleaseNotes: true
+          artifacts: "dist/bonita-application-packager-${{ github.event.inputs.version }}.zip"
