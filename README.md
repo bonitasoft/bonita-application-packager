@@ -158,6 +158,30 @@ bonita-application-packager -docker -configuration-file /path/to/my-custom-appli
 The result is a Docker image containing both your custom application and its configuration.
 
 
+* **(Subscription only)** Usage with Bonita Artifact Repository registry:
+
+```
+bonita-application-packager -docker -bonita-base-image bonitasoft.jfrog.io/docker/bonita-subscription:8.0.0 -registry-username <access-login> -registry-password <access-token> /path/to/my-custom-application.zip
+```
+
+See [Bonita Artifact Repository documentation](https://documentation.bonitasoft.com/bonita/latest/software-extensibility/bonita-repository-access#credentials) on how to get your credentials.
+
+The tool accepts all available version formats for the base image. For example: `8.0`, `8.0.0`, `2023.1`, `2023.1-u0`.
+
+
+* **(Subscription only)** Usage with Quay.io registry (DEPRECATED):
+
+Quay.io is deprecated and is replaced by Bonita Artifact Repository.
+
+```
+bonita-application-packager -docker -bonita-base-image quay.io/bonitasoft/bonita-subscription:8.0.0 -registry-username <access-login> -registry-password <access-token> /path/to/my-custom-application.zip
+```
+
+See [information on how to get your credentials to Quay.io](https://customer.bonitasoft.com/download/request).
+
+The tool accepts all available version formats for the base image. For example: `8.0`, `8.0.0`, `2023.1`, `2023.1-u0`.
+
+
 ## Contributing
 
 If you want to contribute, ask questions about the project, report bug, see the [contributing guide](https://github.com/bonitasoft/bonita-developer-resources/blob/master/CONTRIBUTING.MD).
