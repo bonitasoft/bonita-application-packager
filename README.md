@@ -58,10 +58,8 @@ bonita-application-packager [-tomcat|-docker] [OPTIONS] PATH_TO_APPLICATION_ZIP_
 **Options are:**
 
 ```
--base-image-name string
-    Specify Bonita base docker image name
--base-image-version string
-    Specify Bonita base docker image version
+-bonita-base-image string
+    Specify Bonita base docker image (default "bonita:latest")
 -bonita-tomcat-bundle string
     (Optional) Specify path to the Bonita tomcat bundle file (Bonita*.zip) used to build
 -configuration-file string
@@ -69,12 +67,7 @@ bonita-application-packager [-tomcat|-docker] [OPTIONS] PATH_TO_APPLICATION_ZIP_
 -docker
     Choose to build a docker image containing your application,
     use -tag to specify the name of your built image
-    By default, it builds a 'Community' Docker image
-    use -subscription to build a 'Subscription' Docker image (you must have the rights to download Bonita Subscription Docker base image from Bonita Artifact Repository)
-    use -base-image-name to specify a Bonita docker base image different from the default, which is
-        'bonita' in Community edition
-        'quay.io/bonitasoft/bonita-subscription' in Subscription edition
-    use -base-image-version to specify a Bonita docker base image version different from the default ('latest')
+    use -bonita-base-image to specify a Bonita docker base image different from the default, which is 'bonita:latest'
     use -registry-username and -registry-password if you need to authenticate against the docker image registry to pull Bonita docker base image
 -help
     Print complete usage of this tool
@@ -82,15 +75,15 @@ bonita-application-packager [-tomcat|-docker] [OPTIONS] PATH_TO_APPLICATION_ZIP_
     Specify corresponding password to authenticate against Bonita base docker image Registry
 -registry-username string
     Specify username to authenticate against Bonita base docker image Registry
--subscription
-    Choose to build a Subscription-based docker image (default build a Community image)
 -tag string
-    Docker image tag to use when building (default "bonita-application-")
+    Docker image tag to use when building (default "my-bonita-application:latest")
 -tomcat
     Choose to build a Bonita Tomcat bundle containing your application
     use -bonita-tomcat-bundle to specify the path to the Bonita tomcat bundle file (Bonita*.zip); otherwise the file is looked for in the current folder
 -verbose
     Enable verbose (debug) mode
+-version
+    Print tool version and exit
 ```
 
 
@@ -129,35 +122,22 @@ Output: `./output/BonitaSubscription-2023.1-u0-application.zip`
 
 ### Bonita Docker image usage
 
-* Basic Community usage:
+* Basic usage:
 
 ```
 bonita-application-packager -docker /path/to/my-custom-application.zip
 ```
 
-The result is a Docker image named `bonita-application-community`.
+The result is a Docker image tagged as `my-bonita-application:latest`.
 
-By default, the Bonita based image used is `bonita:latest`, located on [DockerHub](https://hub.docker.com/_/bonita).
-
-
-* Basic Subscription usage:
-
-```
-bonita-application-packager -docker -subscription -registry-username my-username -registry-password my-password /path/to/my-custom-application.zip 
-```
-
-The result is a Docker image named `bonita-application-subscription`.
-
-By default, the Bonita based image used is `quay.io/bonitasoft/bonita-subscription:latest`.
+By default, the Bonita base image used is `bonita:latest`, located on [DockerHub](https://hub.docker.com/_/bonita).
 
 
-* Specify the Bonita base image and version:
+* Specify the Bonita base image:
 
 ```
-bonita-application-packager -docker -base-image-name my-registry/bonita -base-image-version 2023.1-u0 /path/to/my-custom-application.zip 
+bonita-application-packager -docker -bonita-base-image my-registry/bonita:2023.1-u0 /path/to/my-custom-application.zip 
 ```
-
-The Bonita based image used is `my-registry/bonita:2023.1-u0`.
 
 If the `my-registry` Docker registry requires authentication, provide `-registry-username` and `-registry-password` options.
 
@@ -168,16 +148,38 @@ If the `my-registry` Docker registry requires authentication, provide `-registry
 bonita-application-packager -docker -tag my-docker-application:1.0.0 /path/to/my-custom-application.zip
 ```
 
-The result is a Docker image named `my-docker-application:1.0.0`.
-
 
 * **(Subscription only)** Specify the path to the *Application Configuration*:
 
 ```
-bonita-application-packager -docker -subscription -configuration-file /path/to/my-custom-application.bconf /path/to/my-custom-application.zip
+bonita-application-packager -docker -configuration-file /path/to/my-custom-application.bconf /path/to/my-custom-application.zip
 ```
 
-The result is a Docker image named `bonita-application-subscription` containing both your custom application and its configuration.
+The result is a Docker image containing both your custom application and its configuration.
+
+
+* **(Subscription only)** Usage with Bonita Artifact Repository registry:
+
+```
+bonita-application-packager -docker -bonita-base-image bonitasoft.jfrog.io/docker/bonita-subscription:8.0.0 -registry-username <access-login> -registry-password <access-token> /path/to/my-custom-application.zip
+```
+
+See [Bonita Artifact Repository documentation](https://documentation.bonitasoft.com/bonita/latest/software-extensibility/bonita-repository-access#credentials) on how to get your credentials.
+
+The tool accepts all available version formats for the base image. For example: `8.0`, `8.0.0`, `2023.1`, `2023.1-u0`.
+
+
+* **(Subscription only)** Usage with Quay.io registry (DEPRECATED):
+
+Quay.io is deprecated and is replaced by Bonita Artifact Repository.
+
+```
+bonita-application-packager -docker -bonita-base-image quay.io/bonitasoft/bonita-subscription:8.0.0 -registry-username <access-login> -registry-password <access-token> /path/to/my-custom-application.zip
+```
+
+See [information on how to get your credentials to Quay.io](https://customer.bonitasoft.com/download/request).
+
+The tool accepts all available version formats for the base image. For example: `8.0`, `8.0.0`, `2023.1`, `2023.1-u0`.
 
 
 ## Contributing
