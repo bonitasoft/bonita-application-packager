@@ -249,7 +249,8 @@ func buildDockerImage() {
 
 func imageBuild(dockerClient *client.Client) error {
 	fmt.Println("Building Docker image")
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*200)
+	var timeout = printMsgIfVerbose("Using docker context timeout", time.Minute*5)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
 	if err := pullBaseImage(dockerClient, ctx); err != nil {
@@ -492,4 +493,11 @@ func addFilesToZip(w *zip.Writer, basePath, baseInZip string) error {
 		}
 	}
 	return nil
+}
+
+func printMsgIfVerbose[T any](message string, o T) T {
+	if *verbose {
+		fmt.Println(message, o)
+	}
+	return o
 }
