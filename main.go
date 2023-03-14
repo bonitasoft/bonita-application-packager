@@ -127,11 +127,18 @@ func main() {
 
 	if *tomcatFlag {
 		buildTomcatBundle()
+		printFinalNote("ensure to set the Bonita runtime property 'bonita.runtime.custom-application.install-provided-pages=true' in bundle configuration")
 	}
 
 	if *dockerFlag {
 		buildDockerImage()
+		printFinalNote("ensure to set the environment variable 'INSTALL_PROVIDED_PAGES=true' when running container")
 	}
+}
+
+func printFinalNote(additionalNote string) {
+	fmt.Println("\nNOTE: if your custom application is using pages from Bonita Admin or User applications, " +
+		additionalNote + " in order to install those pages, else, your application will fail at install.")
 }
 
 func ExitWithError(message string, messageArgs ...any) {
