@@ -26,6 +26,12 @@ jobs:
       - name: Build binaries
         run: ./build-all-os.sh ${{ github.event.inputs.version }}
 
+      - name: copy readme file
+        uses: canastro/copy-file-action@master
+        with:
+          source: "README.md"
+          target: dist
+
       - name: Zip binaries
         run: cd dist/ && zip -r bonita-application-packager-${{ github.event.inputs.version }}.zip .
 
