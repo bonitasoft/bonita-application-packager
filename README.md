@@ -29,7 +29,7 @@ The tool can be used by both Community and Subscription users.
 * **(Subscription only)** The *Application Archive* generated with [Bonita Continuous Delivery](https://documentation.bonitasoft.com/bcd/latest/livingapp_build) is a proper candidate for a custom application.
 * **(Subscription only)** The *Application Configuration Archive* (*.bconf* file) generated with [Bonita Continuous Delivery](https://documentation.bonitasoft.com/bcd/latest/livingapp_build) is an extra deployable artifact compatible with this tool.
 * The custom application is located and accessible on your filesystem.
-* The custom application has been built for Bonita 2023.1 (Bonita engine version 8.0).
+* The custom application has been built for Bonita 2023.1+ (Bonita runtime version 8.0+).
 
 ### Bonita Tomcat bundle usage
 
