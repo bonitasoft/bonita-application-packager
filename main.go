@@ -4,8 +4,6 @@ import (
 	"archive/zip"
 	"context"
 	_ "embed"
-	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -260,10 +258,6 @@ func imageBuild(dockerClient *client.Client) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	if err := pullBaseImage(dockerClient, ctx); err != nil {
-		return err
-	}
-
 	// create temporary folder to store the docker context needed to build the image
 	dockerContextDir, err := os.MkdirTemp("", "docker-context")
 	if err != nil {
@@ -317,36 +311,6 @@ func imageBuild(dockerClient *client.Client) error {
 	return nil
 }
 
-func pullBaseImage(dockerClient *client.Client, ctx context.Context) error {
-	authConfig := types.AuthConfig{
-		Username: *registryUsername,
-		Password: *registryPassword,
-	}
-	encodedJSON, err := json.Marshal(authConfig)
-	if err != nil {
-		return err
-	}
-	authStr := base64.URLEncoding.EncodeToString(encodedJSON)
-
-	if *verbose {
-		fmt.Println("Pulling base docker image:", *baseImage)
-	}
-
-	out, err := dockerClient.ImagePull(ctx, *baseImage, types.ImagePullOptions{RegistryAuth: authStr})
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
-	termFd, isTerm := term.GetFdInfo(os.Stderr)
-	err = jsonmessage.DisplayJSONMessagesStream(out, os.Stderr, termFd, isTerm, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func buildCustomDockerImage(ctx context.Context, dockerClient *client.Client, dockerContext io.ReadCloser) error {
 	dockerfile := "Dockerfile"
 	opts := types.ImageBuildOptions{
@@ -359,6 +323,24 @@ func buildCustomDockerImage(ctx context.Context, dockerClient *client.Client, do
 	if *verbose {
 		fmt.Println("Using base docker image:", baseImage)
 		fmt.Println("Building new image:", *tag)
+	}
+
+	// configure registry authentication
+	if *registryUsername != "" && *registryPassword != "" {
+		registryName, _, found := strings.Cut(*baseImage, "/")
+		if !found {
+			// if no registry found, set default docker registry
+			registryName = "docker.io"
+		}
+		if *verbose {
+			fmt.Println("Authenticating to registry:", registryName)
+		}
+		opts.AuthConfigs = map[string]types.AuthConfig{
+			registryName: {
+				Username: *registryUsername,
+				Password: *registryPassword,
+			},
+		}
 	}
 
 	res, err := dockerClient.ImageBuild(ctx, dockerContext, opts)
