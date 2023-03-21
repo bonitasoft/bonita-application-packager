@@ -327,7 +327,7 @@ func buildCustomDockerImage(ctx context.Context, dockerClient *client.Client, do
 	}
 
 	if *registryUsername != "" && *registryPassword == "" {
-		fmt.Printf("Enter your password to access Bonita Artifact Repository corresponding to '%v':", *registryUsername)
+		fmt.Printf("Enter your password to access the Docker Registry corresponding to '%v':", *registryUsername)
 		p, err := t.ReadPassword(int(os.Stdin.Fd()))
 		if err != nil {
 			fmt.Println("Error reading your password")
