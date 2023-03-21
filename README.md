@@ -53,7 +53,7 @@ The tool can be used by both Community and Subscription users.
 **Usage:**
 
 ```
-bonita-application-packager [-tomcat|-docker] [OPTIONS] PATH_TO_APPLICATION_ZIP_FILE
+bonita-packager [-tomcat|-docker] [OPTIONS] PATH_TO_APPLICATION_ZIP_FILE
 ```
 
 **Options are:**
@@ -95,7 +95,7 @@ bonita-application-packager [-tomcat|-docker] [OPTIONS] PATH_TO_APPLICATION_ZIP_
 * Basic usage:
 
 ```
-bonita-application-packager -tomcat /path/to/my-custom-application.zip
+bonita-packager -tomcat /path/to/my-custom-application.zip
 ```
 
 The result is a ZIP file located under `output/` folder of the current folder.
@@ -106,7 +106,7 @@ If you do not specify the path to a Bonita Tomcat bundle file, the tool takes th
 * Specify the path to the Bonita Tomcat bundle:
 
 ```
-bonita-application-packager -tomcat -bonita-tomcat-bundle /path/to/BonitaCommunity-2023.1-u0.zip /path/to/my-custom-application.zip
+bonita-packager -tomcat -bonita-tomcat-bundle /path/to/BonitaCommunity-2023.1-u0.zip /path/to/my-custom-application.zip
 ```
 
 Output: `./output/BonitaCommunity-2023.1-u0-application.zip`
@@ -115,7 +115,7 @@ Output: `./output/BonitaCommunity-2023.1-u0-application.zip`
 * **(Subscription only)** Specify the path to the *Application Configuration*:
 
 ```
-bonita-application-packager -tomcat -bonita-tomcat-bundle /path/to/BonitaSubscription-2023.1-u0.zip -configuration-file /path/to/my-custom-application.bconf /path/to/my-custom-application.zip
+bonita-packager -tomcat -bonita-tomcat-bundle /path/to/BonitaSubscription-2023.1-u0.zip -configuration-file /path/to/my-custom-application.bconf /path/to/my-custom-application.zip
 ```
 
 Output: `./output/BonitaSubscription-2023.1-u0-application.zip`
@@ -126,7 +126,7 @@ Output: `./output/BonitaSubscription-2023.1-u0-application.zip`
 * Basic usage:
 
 ```
-bonita-application-packager -docker /path/to/my-custom-application.zip
+bonita-packager -docker /path/to/my-custom-application.zip
 ```
 
 The result is a Docker image tagged as `my-bonita-application:latest`.
@@ -137,7 +137,7 @@ By default, the Bonita base image used is `bonita:latest`, located on [DockerHub
 * Specify the Bonita base image:
 
 ```
-bonita-application-packager -docker -bonita-base-image my-registry/bonita:2023.1-u0 /path/to/my-custom-application.zip 
+bonita-packager -docker -bonita-base-image my-registry/bonita:2023.1-u0 /path/to/my-custom-application.zip 
 ```
 
 If the `my-registry` Docker registry requires authentication, provide `-registry-username` and `-registry-password` options.
@@ -146,14 +146,14 @@ If the `my-registry` Docker registry requires authentication, provide `-registry
 * Specify the Docker image tag:
 
 ```
-bonita-application-packager -docker -tag my-docker-application:1.0.0 /path/to/my-custom-application.zip
+bonita-packager -docker -tag my-docker-application:1.0.0 /path/to/my-custom-application.zip
 ```
 
 
 * **(Subscription only)** Specify the path to the *Application Configuration*:
 
 ```
-bonita-application-packager -docker -configuration-file /path/to/my-custom-application.bconf /path/to/my-custom-application.zip
+bonita-packager -docker -configuration-file /path/to/my-custom-application.bconf /path/to/my-custom-application.zip
 ```
 
 The result is a Docker image containing both your custom application and its configuration.
@@ -162,7 +162,7 @@ The result is a Docker image containing both your custom application and its con
 * **(Subscription only)** Usage with Bonita Artifact Repository registry:
 
 ```
-bonita-application-packager -docker -bonita-base-image bonitasoft.jfrog.io/docker/bonita-subscription:8.0.0 -registry-username <access-login> -registry-password <access-token> /path/to/my-custom-application.zip
+bonita-packager -docker -bonita-base-image bonitasoft.jfrog.io/docker/bonita-subscription:8.0.0 -registry-username <access-login> -registry-password <access-token> /path/to/my-custom-application.zip
 ```
 
 See [Bonita Artifact Repository documentation](https://documentation.bonitasoft.com/bonita/latest/software-extensibility/bonita-repository-access#credentials) on how to get your credentials.
@@ -175,7 +175,7 @@ The tool accepts all available version formats for the base image. For example: 
 Quay.io is deprecated and is replaced by Bonita Artifact Repository.
 
 ```
-bonita-application-packager -docker -bonita-base-image quay.io/bonitasoft/bonita-subscription:8.0.0 -registry-username <access-login> -registry-password <access-token> /path/to/my-custom-application.zip
+bonita-packager -docker -bonita-base-image quay.io/bonitasoft/bonita-subscription:8.0.0 -registry-username <access-login> -registry-password <access-token> /path/to/my-custom-application.zip
 ```
 
 See [information on how to get your credentials to Quay.io](https://customer.bonitasoft.com/download/request).
