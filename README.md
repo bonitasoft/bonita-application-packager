@@ -73,7 +73,8 @@ bonita-application-packager [-tomcat|-docker] [OPTIONS] PATH_TO_APPLICATION_ZIP_
 -help
     Print complete usage of this tool
 -registry-password string
-    Specify corresponding password to authenticate against Bonita base docker image Registry
+    Specify password to authenticate against Bonita base docker image Registry
+    If -registry-username is provided and not -registry-password, password will be prompted interactively and never issued to the console
 -registry-username string
     Specify username to authenticate against Bonita base docker image Registry
 -tag string

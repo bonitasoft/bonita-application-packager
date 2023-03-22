@@ -54,7 +54,8 @@ use -registry-username and -registry-password if you need to authenticate agains
 	tag              = flag.String("tag", defaultImageTag, "Docker image tag to use when building")
 	baseImage        = flag.String("bonita-base-image", defaultBaseImage, "Specify Bonita base docker image")
 	registryUsername = flag.String("registry-username", "", "Specify username to authenticate against Bonita base docker image Registry")
-	registryPassword = flag.String("registry-password", "", "Specify corresponding password to authenticate against Bonita base docker image Registry")
+	registryPassword = flag.String("registry-password", "", `Specify password to authenticate against Bonita base docker image Registry
+If -registry-username is provided and not -registry-password, password will be prompted interactively and never issued to the console`)
 
 	// First argument of the command line pointing to the custom application zip file
 	appPath string
