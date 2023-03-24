@@ -20,6 +20,7 @@ import (
 	"github.com/docker/docker/pkg/jsonmessage"
 	"github.com/moby/term"
 	cp "github.com/otiai10/copy"
+	t "golang.org/x/term"
 )
 
 const (
@@ -53,7 +54,8 @@ use -registry-username and -registry-password if you need to authenticate agains
 	tag              = flag.String("tag", defaultImageTag, "Docker image tag to use when building")
 	baseImage        = flag.String("bonita-base-image", defaultBaseImage, "Specify Bonita base docker image")
 	registryUsername = flag.String("registry-username", "", "Specify username to authenticate against Bonita base docker image Registry")
-	registryPassword = flag.String("registry-password", "", "Specify corresponding password to authenticate against Bonita base docker image Registry")
+	registryPassword = flag.String("registry-password", "", `Specify password to authenticate against Bonita base docker image Registry
+If -registry-username is provided and not -registry-password, password will be prompted interactively and never issued to the console`)
 
 	// First argument of the command line pointing to the custom application zip file
 	appPath string
@@ -125,12 +127,10 @@ func main() {
 
 	if *tomcatFlag {
 		buildTomcatBundle()
-		printFinalNote("ensure to set the Bonita runtime property 'bonita.runtime.custom-application.install-provided-pages=true' in bundle configuration")
 	}
 
 	if *dockerFlag {
 		buildDockerImage()
-		printFinalNote("ensure to set the environment variable 'INSTALL_PROVIDED_PAGES=true' when running container")
 	}
 }
 
@@ -194,6 +194,8 @@ func buildTomcatBundle() {
 	fmt.Println("\nSuccessfully re-packaged self-contained application:", filepath.Join("output", bundleName+"-application.zip"))
 	fmt.Println("\nTo use it, simply unzip it like your usual Bonita Tomcat bundle, and run ./start-bonita[.sh|.bat]")
 	fmt.Println("More info at https://documentation.bonitasoft.com/bonita/latest/runtime/tomcat-bundle")
+
+	printFinalNote("ensure to set the Bonita runtime property 'bonita.runtime.custom-application.install-provided-pages=true' in bundle configuration")
 }
 
 // check if the Bonita Tomcat bundle is passed as parameter, or found in current folder, exists
@@ -250,6 +252,7 @@ func buildDockerImage() {
 		fmt.Println(err.Error())
 		return
 	}
+	printFinalNote("ensure to set the environment variable 'INSTALL_PROVIDED_PAGES=true' when running container")
 }
 
 func imageBuild(dockerClient *client.Client) error {
@@ -321,8 +324,18 @@ func buildCustomDockerImage(ctx context.Context, dockerClient *client.Client, do
 			"BONITA_BASE_IMAGE": baseImage},
 	}
 	if *verbose {
-		fmt.Println("Using base docker image:", baseImage)
 		fmt.Println("Building new image:", *tag)
+	}
+
+	if *registryUsername != "" && *registryPassword == "" {
+		fmt.Printf("Enter your password to access the Docker Registry corresponding to '%v':", *registryUsername)
+		p, err := t.ReadPassword(int(os.Stdin.Fd()))
+		if err != nil {
+			fmt.Println("Error reading your password")
+			return err
+		}
+		*registryPassword = string(p)
+		fmt.Println() // to make the next print on a fresh new line
 	}
 
 	// configure registry authentication
