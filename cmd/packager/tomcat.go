@@ -8,8 +8,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	cp "github.com/otiai10/copy"
 	zip "github.com/bonitasoft/bonita-application-packager/zip"
+	cp "github.com/otiai10/copy"
 )
 
 func init() {
@@ -22,7 +22,7 @@ var (
 	tomcatBundleFile string
 
 	tomcatPackageCmd = &cobra.Command{
-		Use: "tomcat PATH_TO_YOUR_APPLICATION",
+		Use: "tomcat [PATH_TO_YOUR_APPLICATION]",
 		// ValidArgs: []string{"tomcat", "docker"},
 		Short: "Package your Custom Application within a Bonita Tomcat 😺 Bundle",
 		Long: `Package your Custom Application within a Bonita Tomcat 😺 Bundle.

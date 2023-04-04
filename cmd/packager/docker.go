@@ -40,7 +40,7 @@ var (
 	registryPassword string
 
 	dockerPackageCmd = &cobra.Command{
-		Use:   "docker",
+		Use:   "docker [PATH_TO_YOUR_APPLICATION]",
 		Short: "Package your Custom Application inside a Bonita Docker 🐳 Image",
 		Long: fmt.Sprintf(
 			`Package your Custom Application within a Bonita Docker 🐳 image.

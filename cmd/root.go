@@ -41,4 +41,5 @@ func init() {
 
 	RootCmd.AddCommand(pkg.PackageCmd)
 	RootCmd.CompletionOptions.DisableDefaultCmd = true
+	RootCmd.SetVersionTemplate(fmt.Sprintf("Bonita CLI %s\n", Version))
 }

@@ -19,7 +19,7 @@ var (
 	applicationPath   string
 
 	PackageCmd = &cobra.Command{
-		Use:       "package",
+		Use:       "package [PATH_TO_YOUR_APPLICATION]",
 		ValidArgs: []string{"tomcat", "docker"},
 		Short:     "Package 📦 your Custom Application with Bonita",
 		Long: `Package 📦 your Custom Application within a Bonita Tomcat Bundle or a Bonita Docker image.

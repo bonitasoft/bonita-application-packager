@@ -60,7 +60,7 @@ bonita package [tomcat|docker] [OPTIONS] PATH_TO_APPLICATION_ZIP_FILE
 
 **For Tomcat**
 
-```shell
+```
   -b, --bonita-tomcat-bundle string   (Optional) Specify path to the Bonita tomcat bundle file (Bonita*.zip) used to build.
                                       If not passed, looking for a Bonita tomcat bundle in current folder
   -h, --help                          help for tomcat
@@ -73,7 +73,7 @@ Global Flags:
 
 **For Docker**
 
-```shell
+```
   -i, --bonita-base-image string   Specify Bonita base docker image (default "bonita:latest")
   -h, --help                       help for docker
   -p, --registry-password string   Specify password to authenticate against Bonita base docker image Registry
