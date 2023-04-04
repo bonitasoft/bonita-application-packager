@@ -52,40 +52,38 @@ The tool can be used by both Community and Subscription users.
 
 **Usage:**
 
-```
-bonita-packager [-tomcat|-docker] [OPTIONS] PATH_TO_APPLICATION_ZIP_FILE
+```shell
+bonita package [tomcat|docker] [OPTIONS] PATH_TO_APPLICATION_ZIP_FILE
 ```
 
 **Options are:**
 
+**For Tomcat**
+
 ```
--bonita-base-image string
-    Specify Bonita base docker image (default "bonita:latest")
--bonita-tomcat-bundle string
-    (Optional) Specify path to the Bonita tomcat bundle file (Bonita*.zip) used to build
--configuration-file string
-    (Optional) Specify path to the Bonita configuration file (.bconf) associated to your custom application (Subscription only)
--docker
-    Choose to build a docker image containing your application,
-    use -tag to specify the name of your built image
-    use -bonita-base-image to specify a Bonita docker base image different from the default, which is 'bonita:latest'
-    use -registry-username and -registry-password if you need to authenticate against the docker image registry to pull Bonita docker base image
--help
-    Print complete usage of this tool
--registry-password string
-    Specify password to authenticate against Bonita base docker image Registry
-    If -registry-username is provided and not -registry-password, password will be prompted interactively and never issued to the console
--registry-username string
-    Specify username to authenticate against Bonita base docker image Registry
--tag string
-    Docker image tag to use when building (default "my-bonita-application:latest")
--tomcat
-    Choose to build a Bonita Tomcat bundle containing your application
-    use -bonita-tomcat-bundle to specify the path to the Bonita tomcat bundle file (Bonita*.zip); otherwise the file is looked for in the current folder
--verbose
-    Enable verbose (debug) mode
--version
-    Print tool version and exit
+  -b, --bonita-tomcat-bundle string   (Optional) Specify path to the Bonita tomcat bundle file (Bonita*.zip) used to build.
+                                      If not passed, looking for a Bonita tomcat bundle in current folder
+  -h, --help                          help for tomcat
+
+Global Flags:
+  -c, --configuration-file string   (Optional) Specify path to the Bonita configuration file (.bconf) associated to your custom application (Subscription only)
+  -v, --verbose                     More verbose information output
+```
+
+
+**For Docker**
+
+```
+  -i, --bonita-base-image string   Specify Bonita base docker image (default "bonita:latest")
+  -h, --help                       help for docker
+  -p, --registry-password string   Specify password to authenticate against Bonita base docker image Registry
+                                   If --registry-username is provided and not --registry-password, password will be prompted interactively and never issued to the console
+  -u, --registry-username string   Specify username to authenticate against Bonita base docker image Registry
+  -t, --tag string                 Docker image tag to use when building (default "my-bonita-application:latest")
+
+Global Flags:
+  -c, --configuration-file string   (Optional) Specify path to the Bonita configuration file (.bconf) associated to your custom application (Subscription only)
+  -v, --verbose                     More verbose information output
 ```
 
 
@@ -95,19 +93,23 @@ bonita-packager [-tomcat|-docker] [OPTIONS] PATH_TO_APPLICATION_ZIP_FILE
 
 * Basic usage:
 
-```
-bonita-packager -tomcat /path/to/my-custom-application.zip
+```shell
+bonita package tomcat /path/to/my-custom-application.zip
 ```
 
 The result is a ZIP file located under `output/` folder of the current folder.
 
-If you do not specify the path to a Bonita Tomcat bundle file, the tool takes the first `Bonita*.zip` file located in the current folder.
+If you do not specify the path to a Bonita Tomcat bundle file, the tool takes the first `Bonita*.zip` file located in the **current folder**.
 
 
 * Specify the path to the Bonita Tomcat bundle:
 
+```shell
+bonita package tomcat --bonita-tomcat-bundle /path/to/BonitaCommunity-2023.1-u0.zip /path/to/my-custom-application.zip
 ```
-bonita-packager -tomcat -bonita-tomcat-bundle /path/to/BonitaCommunity-2023.1-u0.zip /path/to/my-custom-application.zip
+or simpler
+```shell
+bonita package tomcat -b /path/to/BonitaCommunity-2023.1-u0.zip /path/to/my-custom-application.zip
 ```
 
 Output: `./output/BonitaCommunity-2023.1-u0-application.zip`
@@ -115,8 +117,12 @@ Output: `./output/BonitaCommunity-2023.1-u0-application.zip`
 
 * **(Subscription only)** Specify the path to the *Application Configuration*:
 
+```shell
+bonita package tomcat --bonita-tomcat-bundle /path/to/BonitaSubscription-2023.1-u0.zip --configuration-file /path/to/my-custom-application.bconf /path/to/my-custom-application.zip
 ```
-bonita-packager -tomcat -bonita-tomcat-bundle /path/to/BonitaSubscription-2023.1-u0.zip -configuration-file /path/to/my-custom-application.bconf /path/to/my-custom-application.zip
+or simpler
+```shell
+bonita package tomcat -b /path/to/BonitaSubscription-2023.1-u0.zip -c /path/to/my-custom-application.bconf /path/to/my-custom-application.zip
 ```
 
 Output: `./output/BonitaSubscription-2023.1-u0-application.zip`
@@ -126,8 +132,8 @@ Output: `./output/BonitaSubscription-2023.1-u0-application.zip`
 
 * Basic usage:
 
-```
-bonita-packager -docker /path/to/my-custom-application.zip
+```shell
+bonita package docker /path/to/my-custom-application.zip
 ```
 
 The result is a Docker image tagged as `my-bonita-application:latest`.
@@ -137,24 +143,38 @@ By default, the Bonita base image used is `bonita:latest`, located on [DockerHub
 
 * Specify the Bonita base image:
 
+```shell
+bonita package docker --bonita-base-image my-registry/bonita:2023.1-u0 /path/to/my-custom-application.zip 
 ```
-bonita-packager -docker -bonita-base-image my-registry/bonita:2023.1-u0 /path/to/my-custom-application.zip 
+or simpler
+```shell
+bonita package docker -i my-registry/bonita:2023.1-u0 /path/to/my-custom-application.zip 
 ```
 
-If the `my-registry` Docker registry requires authentication, provide `-registry-username` and `-registry-password` options.
+If the `my-registry` Docker registry requires authentication, provide `--registry-username` and `--registry-password` options.
 
 
 * Specify the Docker image tag:
 
+```shell
+bonita package docker --tag my-docker-application:1.0.0 /path/to/my-custom-application.zip
 ```
-bonita-packager -docker -tag my-docker-application:1.0.0 /path/to/my-custom-application.zip
+or simpler
+```shell
+bonita package docker -t my-docker-application:1.0.0 /path/to/my-custom-application.zip
 ```
+
+Be careful to respect [Docker image tag naming constraints](https://docs.docker.com/engine/reference/commandline/tag/)
 
 
 * **(Subscription only)** Specify the path to the *Application Configuration*:
 
+```shell
+bonita package docker --configuration-file /path/to/my-custom-application.bconf /path/to/my-custom-application.zip
 ```
-bonita-packager -docker -configuration-file /path/to/my-custom-application.bconf /path/to/my-custom-application.zip
+or simpler
+```shell
+bonita package docker -c /path/to/my-custom-application.bconf /path/to/my-custom-application.zip
 ```
 
 The result is a Docker image containing both your custom application and its configuration.
@@ -162,26 +182,45 @@ The result is a Docker image containing both your custom application and its con
 
 * **(Subscription only)** Usage with Bonita Artifact Repository registry:
 
+```shell
+bonita package docker --bonita-base-image bonitasoft.jfrog.io/docker/bonita-subscription:8.0.0 --registry-username <access-login> --registry-password <access-token> /path/to/my-custom-application.zip
 ```
-bonita-packager -docker -bonita-base-image bonitasoft.jfrog.io/docker/bonita-subscription:8.0.0 -registry-username <access-login> -registry-password <access-token> /path/to/my-custom-application.zip
+or simpler
+```shell
+bonita package docker -i bonitasoft.jfrog.io/docker/bonita-subscription:8.0.0 -u <access-login> -p <access-token> /path/to/my-custom-application.zip
 ```
+
+If password is not provided, you will be prompted to enter it on the command line (it will not be issued in the console).
 
 See [Bonita Artifact Repository documentation](https://documentation.bonitasoft.com/bonita/latest/software-extensibility/bonita-repository-access#credentials) on how to get your credentials.
 
-The tool accepts all available version formats for the base image. For example: `8.0`, `8.0.0`, `2023.1`, `2023.1-u0`.
+The tool accepts all available version formats for Bonita base image. For example: `8.0`, `8.0.0`, `2023.1`, `2023.1-u0`.
 
 
 * **(Subscription only)** Usage with Quay.io registry (DEPRECATED):
 
 Quay.io is deprecated and is replaced by Bonita Artifact Repository.
 
-```
-bonita-packager -docker -bonita-base-image quay.io/bonitasoft/bonita-subscription:8.0.0 -registry-username <access-login> -registry-password <access-token> /path/to/my-custom-application.zip
+```shell
+bonita package docker --bonita-base-image quay.io/bonitasoft/bonita-subscription:8.0.0 --registry-username <access-login> --registry-password <access-token> /path/to/my-custom-application.zip
 ```
 
 See [information on how to get your credentials to Quay.io](https://customer.bonitasoft.com/download/request).
 
 The tool accepts all available version formats for the base image. For example: `8.0`, `8.0.0`, `2023.1`, `2023.1-u0`.
+
+
+## Display the version of this tool
+
+Simply call:
+
+`bonita version`
+
+`bonita --version`
+
+or
+
+`bonita -v`
 
 
 ## Contributing
