@@ -39,7 +39,6 @@ The tool can be used by both Community and Subscription users.
 
 * Have Docker client installed and configured.
 * Have an internet connection available.
-* **(Subscription only)** DEPRECATED: Have credentials to access *Quay.io* ([see information on how to access Quay.io](https://customer.bonitasoft.com/download/request))
 * **(Subscription only)** Have credentials to access [Bonita Artifact Repository](https://documentation.bonitasoft.com/bonita/latest/software-extensibility/bonita-repository-access)
 
 
@@ -195,19 +194,6 @@ If password is not provided, you will be prompted to enter it on the command lin
 See [Bonita Artifact Repository documentation](https://documentation.bonitasoft.com/bonita/latest/software-extensibility/bonita-repository-access#credentials) on how to get your credentials.
 
 The tool accepts all available version formats for Bonita base image. For example: `8.0`, `8.0.0`, `2023.1`, `2023.1-u0`.
-
-
-* **(Subscription only)** Usage with Quay.io registry (DEPRECATED):
-
-Quay.io is deprecated and is replaced by Bonita Artifact Repository.
-
-```shell
-bonita package docker --bonita-base-image quay.io/bonitasoft/bonita-subscription:8.0.0 --registry-username <access-login> --registry-password <access-token> /path/to/my-custom-application.zip
-```
-
-See [information on how to get your credentials to Quay.io](https://customer.bonitasoft.com/download/request).
-
-The tool accepts all available version formats for the base image. For example: `8.0`, `8.0.0`, `2023.1`, `2023.1-u0`.
 
 
 ## Display the version of this tool
