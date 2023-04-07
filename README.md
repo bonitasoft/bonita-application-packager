@@ -223,6 +223,18 @@ or
 `bonita -v`
 
 
+## Building
+
+Run provided script:
+
+`./build-all-os.sh`
+
+
+## Updating 3rd-party dependencies
+
+`go get -u . && go mod tidy`
+
+
 ## Contributing
 
 If you want to contribute, ask questions about the project, report bug, see the [contributing guide](https://github.com/bonitasoft/bonita-developer-resources/blob/master/CONTRIBUTING.MD).
