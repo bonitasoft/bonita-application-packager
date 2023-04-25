@@ -3,7 +3,6 @@ package zip
 import (
 	"archive/zip"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -11,19 +10,24 @@ import (
 	"strings"
 )
 
-func UnzipFile(zipFile string, outputDir string) {
+func UnzipFile(zipFile string, outputDir string) string {
 	archive, err := zip.OpenReader(zipFile)
 	if err != nil {
 		panic(err)
 	}
 	defer archive.Close()
 
-	for _, f := range archive.File {
+	var rootDirName string // First-level dir name inside zip, returned by this function
+	for i, f := range archive.File {
+		if i == 0 && f.FileInfo().IsDir() {
+			rootDirName = f.Name
+			rootDirName = strings.Trim(rootDirName, "/")
+			rootDirName = strings.Trim(rootDirName, "\\")
+		}
 		filePath := filepath.Join(outputDir, f.Name)
 
 		if !strings.HasPrefix(filePath, filepath.Clean(outputDir)+string(os.PathSeparator)) {
-			fmt.Println("invalid file path")
-			return
+			panic("invalid file path")
 		}
 		if f.FileInfo().IsDir() {
 			os.MkdirAll(filePath, os.ModePerm)
@@ -51,6 +55,7 @@ func UnzipFile(zipFile string, outputDir string) {
 		dstFile.Close()
 		fileInArchive.Close()
 	}
+	return rootDirName
 }
 
 func ZipDirectory(zipFilename string, baseDir string, baseInZip string) error {

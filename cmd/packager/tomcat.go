@@ -55,27 +55,30 @@ func buildTomcatBundle() {
 	bundleNameAndPath := filepath.Base(bundleAbsolutePath)                      // just the name of the zip file without the path
 	bundleName := bundleNameAndPath[0:strings.Index(bundleNameAndPath, ".zip")] // just the name without '.zip'
 	fmt.Printf("Unpacking Bonita Tomcat bundle %s.zip\n", bundleName)
-	zip.UnzipFile(bundleAbsolutePath, "output")
+	bundleRootDirInsideZip := zip.UnzipFile(bundleAbsolutePath, "output")
+	if bundleRootDirInsideZip == "" {
+		panic("No root folder found inside file " + bundleAbsolutePath)
+	}
 	fmt.Println("Unpacking Bonita WAR file")
-	zip.UnzipFile(filepath.Join("output", bundleName, "server", "webapps", "bonita.war"), filepath.Join("output", bundleName, "server", "webapps", "bonita"))
+	zip.UnzipFile(filepath.Join("output", bundleRootDirInsideZip, "server", "webapps", "bonita.war"), filepath.Join("output", bundleRootDirInsideZip, "server", "webapps", "bonita"))
 	if Verbose {
 		fmt.Println("Removing unpacked Bonita WAR file")
 	}
-	if err := os.Remove(filepath.Join("output", bundleName, "server", "webapps", "bonita.war")); err != nil {
+	if err := os.Remove(filepath.Join("output", bundleRootDirInsideZip, "server", "webapps", "bonita.war")); err != nil {
 		panic(err)
 	}
 	fmt.Println("Copying your custom application inside Bonita")
-	copyResourceToCustomAppFolder(bundleName, applicationPath)
+	copyResourceToCustomAppFolder(bundleRootDirInsideZip, applicationPath)
 	if configurationFile != "" {
 		fmt.Println("Copying your Bonita configuration file inside Bonita")
-		copyResourceToCustomAppFolder(bundleName, configurationFile)
+		copyResourceToCustomAppFolder(bundleRootDirInsideZip, configurationFile)
 	}
 	fmt.Println("Re-packing Bonita bundle containing your application")
-	err := zip.ZipDirectory(filepath.Join("output", bundleName+"-application.zip"), filepath.Join("output", bundleName), bundleName)
+	err := zip.ZipDirectory(filepath.Join("output", bundleName+"-application.zip"), filepath.Join("output", bundleRootDirInsideZip), bundleRootDirInsideZip)
 	if err != nil {
 		panic(err)
 	}
-	tempfolderToZip := filepath.Join("output", bundleName)
+	tempfolderToZip := filepath.Join("output", bundleRootDirInsideZip)
 	if exists(tempfolderToZip) {
 		if Verbose {
 			fmt.Println("Cleaning temporary folder structure")
