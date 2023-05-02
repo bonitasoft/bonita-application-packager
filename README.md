@@ -86,6 +86,53 @@ Global Flags:
 ```
 
 
+## After packaging usage
+
+### Tomcat bundle
+
+The Tomcat output of the packager tool is like a usual Bonita Tomcat bundle. To use it, unzip it and execute `start-bonita[.sh|.bat]` script.
+
+Read [Installation of Bonita Tomcat bundle](https://documentation.bonitasoft.com/bonita/latest/runtime/tomcat-bundle) for more information.
+
+
+### Docker image
+
+The Docker output of the packager tool is like a usual Bonita Docker image. To use it, run appropriate command:
+
+**Community release:**
+
+```shell
+docker run --name my-bonita-app -d -p 8080:8080 <my-docker-image-app>
+```
+
+**Subscription release:**
+
+```shell
+docker run --name my-bonita-app -h <hostname> -v <license-folder>:/opt/bonita_lic/ -d -p 8080:8080 <my-docker-image-app>
+```
+
+Read [Deploy Bonita Runtime with Docker](https://documentation.bonitasoft.com/bonita/latest/runtime/bonita-docker-installation) for complete options on how to run a Bonita-based Docker container.
+
+
+### Installation of Bonita Admin & User application pages
+
+[Bonita Admin Application](https://documentation.bonitasoft.com/bonita/latest/runtime/admin-application-overview) and [Bonita User Application](https://documentation.bonitasoft.com/bonita/latest/runtime/user-application-overview) are no longer installed after the packaging process. If your custom application is using pages from one of those applications, a property must be set in order to install those pages at Bonita Runtime startup:
+
+* Within a Tomcat bundle: set the Bonita runtime property `bonita.runtime.custom-application.install-provided-pages=true` in bundle configuration (see [Bonita Runtime Configuration](https://documentation.bonitasoft.com/bonita/latest/runtime/runtime-configuration-index) for more information)
+
+* Within a Docker container: set the [environment variable](https://documentation.bonitasoft.com/bonita/latest/runtime/bonita-docker-installation#_environment_variables) `INSTALL_PROVIDED_PAGES=true` when running container
+
+The concerned pages are:
+
+* [Admin Process list page](https://documentation.bonitasoft.com/bonita/latest/runtime/admin-application-process-list)
+* [Admin Case list page](https://documentation.bonitasoft.com/bonita/latest/runtime/cases)
+* [Admin Task list page](https://documentation.bonitasoft.com/bonita/latest/runtime/admin-application-task-list)
+* [User Process list page](https://documentation.bonitasoft.com/bonita/latest/runtime/user-process-list)
+* [User Case list page](https://documentation.bonitasoft.com/bonita/latest/runtime/user-application-case-list)
+* [User Case details page](https://documentation.bonitasoft.com/bonita/latest/runtime/user-application-case-list#case-details)
+* [User Task list page](https://documentation.bonitasoft.com/bonita/latest/runtime/user-task-list)
+
+
 ## Examples
 
 ### Bonita Tomcat bundle usage
