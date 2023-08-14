@@ -265,7 +265,7 @@ Run provided script:
 
 ## Updating 3rd-party dependencies
 
-`go get -u . && go mod tidy`
+`go get -u ./... && go mod tidy`
 
 
 ## Contributing
