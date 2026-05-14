@@ -28,8 +28,8 @@ The tool can be used by both Community and Subscription users.
     * Profiles **(Subscription only)**
     * REST API Extensions
     * Themes
-* **(Subscription only)** The *Application Archive* generated with [Bonita Continuous Delivery](https://documentation.bonitasoft.com/bcd/latest/livingapp_build) is a proper candidate for a custom application.
-* **(Subscription only)** The *Application Configuration Archive* (*.bconf* file) generated with [Bonita Continuous Delivery](https://documentation.bonitasoft.com/bcd/latest/livingapp_build) is an extra deployable artifact compatible with this tool.
+* **(Subscription only)** The *Application Archive* generated with [Bonita Continuous Delivery](https://documentation.ofelia.com/bcd/latest/livingapp_build) is a proper candidate for a custom application.
+* **(Subscription only)** The *Application Configuration Archive* (*.bconf* file) generated with [Bonita Continuous Delivery](https://documentation.ofelia.com/bcd/latest/livingapp_build) is an extra deployable artifact compatible with this tool.
 * The custom application is located and accessible on your filesystem.
 * The custom application has been built for Bonita 2023.1+ (Bonita runtime version 8.0+).
 
@@ -41,7 +41,7 @@ The tool can be used by both Community and Subscription users.
 
 * Have Docker client installed and configured.
 * Have an internet connection available.
-* **(Subscription only)** Have credentials to access [Bonita Artifact Repository](https://documentation.bonitasoft.com/bonita/latest/software-extensibility/bonita-repository-access)
+* **(Subscription only)** Have credentials to access [Bonita Artifact Repository](https://documentation.ofelia.com/bonita/latest/software-extensibility/bonita-repository-access)
 
 
 ## How to use the packager tool
@@ -94,7 +94,7 @@ Global Flags:
 
 The Tomcat output of the packager tool is like a usual Bonita Tomcat bundle. To use it, unzip it and execute `start-bonita[.sh|.bat]` script.
 
-Read [Installation of Bonita Tomcat bundle](https://documentation.bonitasoft.com/bonita/latest/runtime/tomcat-bundle) for more information.
+Read [Installation of Bonita Tomcat bundle](https://documentation.ofelia.com/bonita/latest/runtime/tomcat-bundle) for more information.
 
 
 ### Docker image
@@ -113,26 +113,26 @@ docker run --name my-bonita-app -d -p 8080:8080 <my-docker-image-app>
 docker run --name my-bonita-app -h <hostname> -v <license-folder>:/opt/bonita_lic/ -d -p 8080:8080 <my-docker-image-app>
 ```
 
-Read [Deploy Bonita Runtime with Docker](https://documentation.bonitasoft.com/bonita/latest/runtime/bonita-docker-installation) for complete options on how to run a Bonita-based Docker container.
+Read [Deploy Bonita Runtime with Docker](https://documentation.ofelia.com/bonita/latest/runtime/bonita-docker-installation) for complete options on how to run a Bonita-based Docker container.
 
 
 ### Installation of Bonita Admin & User application pages
 
-[Bonita Admin Application](https://documentation.bonitasoft.com/bonita/latest/runtime/admin-application-overview) and [Bonita User Application](https://documentation.bonitasoft.com/bonita/latest/runtime/user-application-overview) are no longer installed after the packaging process. If your custom application is using pages from one of those applications, a property must be set in order to install those pages at Bonita Runtime startup:
+[Bonita Admin Application](https://documentation.ofelia.com/bonita/latest/runtime/admin-application-overview) and [Bonita User Application](https://documentation.ofelia.com/bonita/latest/runtime/user-application-overview) are no longer installed after the packaging process. If your custom application is using pages from one of those applications, a property must be set in order to install those pages at Bonita Runtime startup:
 
-* Within a Tomcat bundle: set the Bonita runtime property `bonita.runtime.custom-application.install-provided-pages=true` in bundle configuration (see [Bonita Runtime Configuration](https://documentation.bonitasoft.com/bonita/latest/runtime/runtime-configuration-index) for more information)
+* Within a Tomcat bundle: set the Bonita runtime property `bonita.runtime.custom-application.install-provided-pages=true` in bundle configuration (see [Bonita Runtime Configuration](https://documentation.ofelia.com/bonita/latest/runtime/runtime-configuration-index) for more information)
 
-* Within a Docker container: set the [environment variable](https://documentation.bonitasoft.com/bonita/latest/runtime/bonita-docker-installation#_environment_variables) `INSTALL_PROVIDED_PAGES=true` when running container
+* Within a Docker container: set the [environment variable](https://documentation.ofelia.com/bonita/latest/runtime/bonita-docker-installation#_environment_variables) `INSTALL_PROVIDED_PAGES=true` when running container
 
 The concerned pages are:
 
-* [Admin Process list page](https://documentation.bonitasoft.com/bonita/latest/runtime/admin-application-process-list)
-* [Admin Case list page](https://documentation.bonitasoft.com/bonita/latest/runtime/cases)
-* [Admin Task list page](https://documentation.bonitasoft.com/bonita/latest/runtime/admin-application-task-list)
-* [User Process list page](https://documentation.bonitasoft.com/bonita/latest/runtime/user-process-list)
-* [User Case list page](https://documentation.bonitasoft.com/bonita/latest/runtime/user-application-case-list)
-* [User Case details page](https://documentation.bonitasoft.com/bonita/latest/runtime/user-application-case-list#case-details)
-* [User Task list page](https://documentation.bonitasoft.com/bonita/latest/runtime/user-task-list)
+* [Admin Process list page](https://documentation.ofelia.com/bonita/latest/runtime/admin-application-process-list)
+* [Admin Case list page](https://documentation.ofelia.com/bonita/latest/runtime/cases)
+* [Admin Task list page](https://documentation.ofelia.com/bonita/latest/runtime/admin-application-task-list)
+* [User Process list page](https://documentation.ofelia.com/bonita/latest/runtime/user-process-list)
+* [User Case list page](https://documentation.ofelia.com/bonita/latest/runtime/user-application-case-list)
+* [User Case details page](https://documentation.ofelia.com/bonita/latest/runtime/user-application-case-list#case-details)
+* [User Task list page](https://documentation.ofelia.com/bonita/latest/runtime/user-task-list)
 
 
 ## Examples
@@ -240,7 +240,7 @@ bonita package docker -i bonitasoft.jfrog.io/docker/bonita-subscription:8.0.0 -u
 
 If password is not provided, you will be prompted to enter it on the command line (it will not be issued in the console).
 
-See [Bonita Artifact Repository documentation](https://documentation.bonitasoft.com/bonita/latest/software-extensibility/bonita-repository-access#credentials) on how to get your credentials.
+See [Bonita Artifact Repository documentation](https://documentation.ofelia.com/bonita/latest/software-extensibility/bonita-repository-access#credentials) on how to get your credentials.
 
 The tool accepts all available version formats for Bonita base image. For example: `8.0`, `8.0.0`, `2023.1`, `2023.1-u0`.
 
