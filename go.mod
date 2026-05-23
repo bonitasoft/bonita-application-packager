@@ -3,7 +3,7 @@ module github.com/bonitasoft/bonita-application-packager
 go 1.20
 
 require (
-	github.com/docker/docker v24.0.6+incompatible
+	github.com/docker/docker v24.0.7+incompatible
 	github.com/moby/term v0.5.0
 	github.com/otiai10/copy v1.14.0
 	github.com/spf13/cobra v1.7.0
