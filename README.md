@@ -2,7 +2,7 @@
 
 **DEPRECATED: This experimental tool can only be used with Bonita version 2023.1. Starting from 2023.2, the packaging process is replaced by a [Maven plugin](https://github.com/bonitasoft/bonita-project-maven-plugin).**
 
-The Bonita Application Packager tool is provided by Bonitasoft to allow you to build a Bonita Tomcat bundle or a Bonita Docker image containing your custom application.
+The Bonita Application Packager tool is provided by Ofelia to allow you to build a Bonita Tomcat bundle or a Bonita Docker image containing your custom application.
 
 The advantage of such a packaging is that Bonita automatically installs your entire application (pages, Rest API extensions, themes, BDM, ...) at startup, relieving you from having to install all artifacts by hand one by one.
 
